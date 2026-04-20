@@ -1,0 +1,65 @@
+---
+import '../styles/global.css';
+import { ViewTransitions } from 'astro:transitions';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = 'afit', description = "A.F. Itabıyıgün — CS, math, psychology, AI safety, and creative work in between." } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<!doctype html>
+<html lang="en" data-theme="paper">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    {/* Theme-aware favicon — swapped by the theme switcher. */}
+    <link rel="icon" type="image/svg+xml" href={`${base}/favicon-paper.svg`} id="favicon" />
+
+    {/* Fonts: free-tier Google fonts chosen per theme. */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;600;700&display=swap"
+    />
+
+    <ViewTransitions />
+
+    {/* Early theme restore so there's no flash of default theme. */}
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem('afit-theme');
+          if (t && ['paper', 'pastel', 'riso', 'midnight'].includes(t)) {
+            document.documentElement.setAttribute('data-theme', t);
+          }
+        } catch (_) {}
+      })();
+    </script>
+
+    {/* View-source easter egg for the curious. */}
+    <Fragment set:html={`<!--
+          .--------.
+         /          \\__
+        /            \\ \\__
+       |  afit · 2026 \\  \\__
+        \\              \\___/
+         \\_____/\\______/
+
+         hi 👋 you found the peeled-corner ascii. code's at
+         github.com/afitabiyigun
+    -->`} />
+  </head>
+  <body>
+    <slot />
+    <script>
+      import '../scripts/easter-eggs.ts';
+    </script>
+  </body>
+</html>

@@ -1,0 +1,105 @@
+/* Three palettes. Flip :root[data-theme] to swap everything.
+   Variables are deliberately duplicated per theme so every surface — type,
+   shapes, borders, shadows — can be tuned per mood. */
+
+:root,
+:root[data-theme='paper'] {
+  --bg: #f6f1e7;
+  --bg-soft: #efe7d5;
+  --ink: #1c1b18;
+  --ink-soft: #46433d;
+  --muted: #857f73;
+  --accent-1: #d9663b;
+  --accent-2: #5b7a52;
+  --accent-3: #c7a14a;
+  --shape-1: #e8c7a6;
+  --shape-2: #b8c8a8;
+  --shape-3: #e5a58d;
+  --shape-4: #8fa8b3;
+  --rule: #2a2825;
+  --shadow: 0 6px 22px -8px rgba(28, 27, 24, 0.35);
+  --grain: 0;
+  --radius: 14px;
+  --font-display: 'Fraunces', 'Cochin', 'Times New Roman', serif;
+  --font-body: 'Inter', 'Helvetica Neue', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --display-weight: 500;
+  --body-weight: 400;
+  --letter-display: -0.01em;
+}
+
+:root[data-theme='pastel'] {
+  --bg: #ffffff;
+  --bg-soft: #f4f6fb;
+  --ink: #1b1f2a;
+  --ink-soft: #454a5b;
+  --muted: #8a90a2;
+  --accent-1: #9ad2c5;
+  --accent-2: #f4b6a8;
+  --accent-3: #c9b6e8;
+  --shape-1: #bfe4db;
+  --shape-2: #ffd7c8;
+  --shape-3: #e6d9ff;
+  --shape-4: #ffe7a8;
+  --rule: #d8dbe4;
+  --shadow: 0 10px 30px -14px rgba(27, 31, 42, 0.25);
+  --grain: 0;
+  --radius: 22px;
+  --font-display: 'General Sans', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --display-weight: 600;
+  --body-weight: 400;
+  --letter-display: -0.02em;
+}
+
+:root[data-theme='riso'] {
+  --bg: #f3eee3;
+  --bg-soft: #ece3cf;
+  --ink: #12182b;
+  --ink-soft: #2e3350;
+  --muted: #6b6e86;
+  --accent-1: #1f3cff; /* riso cobalt */
+  --accent-2: #ff3ea5; /* riso fluo pink */
+  --accent-3: #e8a800; /* riso mustard */
+  --shape-1: #1f3cff;
+  --shape-2: #ff3ea5;
+  --shape-3: #e8a800;
+  --shape-4: #17a272;
+  --rule: #12182b;
+  --shadow: 4px 4px 0 0 #12182b;
+  --grain: 0.35;
+  --radius: 6px;
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --display-weight: 700;
+  --body-weight: 400;
+  --letter-display: -0.03em;
+}
+
+/* Hidden 4th theme, unlocked by clicking the logo 7 times (easter egg). */
+:root[data-theme='midnight'] {
+  --bg: #0c0f1a;
+  --bg-soft: #151a2a;
+  --ink: #f3eee3;
+  --ink-soft: #c8c4b8;
+  --muted: #7a7d8f;
+  --accent-1: #8ae6ff;
+  --accent-2: #ffd27a;
+  --accent-3: #ff9acb;
+  --shape-1: #2a3556;
+  --shape-2: #3b2f4b;
+  --shape-3: #2a4838;
+  --shape-4: #4a3a26;
+  --rule: #2a2f40;
+  --shadow: 0 10px 40px -16px rgba(138, 230, 255, 0.3);
+  --grain: 0.1;
+  --radius: 14px;
+  --font-display: 'Fraunces', 'Cochin', serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --display-weight: 500;
+  --body-weight: 400;
+  --letter-display: -0.01em;
+}

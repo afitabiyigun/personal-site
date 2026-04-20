@@ -1,0 +1,105 @@
+---
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('writing', ({ data }) => !data.draft);
+  return posts.map((p) => ({ params: { slug: p.slug }, props: { post: p } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+---
+
+<Base title={`${post.data.title} · afit`}>
+  <div class="container">
+    <Nav />
+    <article class="essay">
+      <header>
+        <p class="eyebrow mono">§ 03 · writing · <span class="dim">{fmt(post.data.date)}</span></p>
+        <h1>{post.data.title}</h1>
+        {post.data.tags.length > 0 && (
+          <p class="tags mono">
+            {post.data.tags.map((t: string) => <span class="tag">#{t}</span>)}
+          </p>
+        )}
+      </header>
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+  </div>
+
+  {/* Selection → copy link-to-text. Floating ∿ icon follows text selection. */}
+  <button class="select-share" type="button" hidden aria-label="Copy link to selected text">∿</button>
+</Base>
+
+<style>
+  .essay { padding: 2rem 0 5rem; max-width: 68ch; margin-inline: auto; }
+  .essay header { margin-bottom: 2.5rem; }
+  .eyebrow { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: lowercase; margin: 0 0 0.6rem; }
+  .dim { color: var(--muted); }
+  .tags { margin: 0.8rem 0 0; display: flex; gap: 0.6rem; font-size: 0.82rem; }
+  .tag { color: var(--accent-1); }
+
+  .prose :global(p) { margin: 1.2rem 0; }
+  .prose :global(a) { color: var(--accent-1); }
+  .prose :global(h2) { margin-top: 2.2rem; }
+  .prose :global(blockquote) {
+    border-left: 3px solid var(--accent-1);
+    padding-left: 1rem;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  .select-share {
+    position: fixed;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--bg);
+    border: 0;
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    z-index: 1001;
+    transform: translate(-50%, -140%);
+    transition: opacity 140ms ease;
+  }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.select-share');
+  if (btn) {
+    let selText = '';
+    document.addEventListener('selectionchange', () => {
+      const sel = window.getSelection();
+      const txt = sel?.toString().trim() ?? '';
+      if (txt.length < 4 || !sel || sel.rangeCount === 0) {
+        btn.hidden = true; selText = ''; return;
+      }
+      const range = sel.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) { btn.hidden = true; return; }
+      btn.hidden = false;
+      btn.style.top = `${rect.top + window.scrollY}px`;
+      btn.style.left = `${rect.left + rect.width / 2}px`;
+      selText = txt;
+    });
+    btn.addEventListener('click', async () => {
+      if (!selText) return;
+      const fragment = encodeURIComponent(selText.slice(0, 80));
+      const url = `${location.origin}${location.pathname}#:~:text=${fragment}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        btn.textContent = '✓';
+        setTimeout(() => (btn.textContent = '∿'), 1200);
+      } catch (_) {
+        prompt('Copy this link:', url);
+      }
+    });
+  }
+</script>

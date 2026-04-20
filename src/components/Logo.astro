@@ -1,0 +1,63 @@
+---
+/*
+  Monogram logo. Click it 7 times in a row to unlock the hidden "midnight"
+  theme (dispatches `afit:unlock-midnight` to the document).
+*/
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<a href={`${base}/`} class="logo" aria-label="Home" data-logo>
+  <svg viewBox="0 0 44 28" aria-hidden="true">
+    <path d="M4 24 L14 4 L24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M8 17 H20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M30 9 v15 M30 9 c6 0 6 7 0 7 c6 0 6 8 0 8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span class="wordmark">afit</span>
+</a>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink);
+    background: none;
+    padding: 4px 2px;
+  }
+  .logo:hover { background: none; }
+  .logo svg {
+    width: 42px; height: auto;
+  }
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+</style>
+
+<script>
+  let count = 0;
+  let lastClick = 0;
+
+  // Idempotent: only attach once per logo.
+  document.querySelectorAll<HTMLElement>('[data-logo]:not([data-logo-init])').forEach((el) => {
+    el.setAttribute('data-logo-init', '');
+    el.addEventListener('click', (e) => {
+      const now = Date.now();
+      if (now - lastClick > 1200) count = 0;
+      lastClick = now;
+      count++;
+      if (count >= 7) {
+        e.preventDefault();
+        count = 0;
+        document.dispatchEvent(new CustomEvent('afit:unlock-midnight'));
+        // Give a tiny wiggle as feedback.
+        el.animate(
+          [{ transform: 'rotate(-3deg)' }, { transform: 'rotate(3deg)' }, { transform: 'rotate(0)' }],
+          { duration: 320, easing: 'ease-in-out' }
+        );
+      }
+    });
+  });
+</script>

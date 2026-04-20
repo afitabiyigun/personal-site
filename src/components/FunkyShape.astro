@@ -1,0 +1,47 @@
+---
+import Blob1 from './shapes/Blob1.astro';
+import Blob2 from './shapes/Blob2.astro';
+import Blob3 from './shapes/Blob3.astro';
+import Blob4 from './shapes/Blob4.astro';
+import Blob5 from './shapes/Blob5.astro';
+
+interface Props {
+  variant?: 1 | 2 | 3 | 4 | 5;
+  fill?: string;       // CSS var reference or color
+  rotate?: number;
+  wobble?: boolean;
+  class?: string;
+}
+const { variant = 1, fill = 'var(--shape-1)', rotate = 0, wobble = true, class: className } = Astro.props;
+const Shapes = { 1: Blob1, 2: Blob2, 3: Blob3, 4: Blob4, 5: Blob5 } as const;
+const Shape = Shapes[variant];
+---
+<span
+  class:list={['funky', { wobble }, className]}
+  style={`--rot:${rotate}deg`}
+>
+  <Shape fill={fill} />
+</span>
+
+<style>
+  .funky {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    transform: rotate(var(--rot, 0deg));
+    line-height: 0;
+  }
+  .funky svg { width: 100%; height: 100%; display: block; }
+  .funky.wobble svg {
+    animation: funky-wobble 9s ease-in-out infinite;
+    transform-origin: 50% 50%;
+  }
+  @keyframes funky-wobble {
+    0%, 100% { transform: scale(1) rotate(0); }
+    33%      { transform: scale(1.02, 0.985) rotate(0.6deg); }
+    66%      { transform: scale(0.985, 1.02) rotate(-0.6deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .funky.wobble svg { animation: none; }
+  }
+</style>

@@ -1,0 +1,204 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import ThemeSwitcher from '../components/ThemeSwitcher.astro';
+import Peel from '../components/Peel.astro';
+import FunkyShape from '../components/FunkyShape.astro';
+---
+
+<Base title="afit — creative + curious">
+  <div class="container">
+    <Nav />
+
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow mono">personal site · work in progress</p>
+        <h1>
+          hi, i'm <span class="accent">afit</span>.<br />
+          i think about <em>minds</em>, <em>models</em>,<br />
+          and <em>making things</em>.
+        </h1>
+        <p class="lede">
+          Background in CS, math, and psychology. Currently working on AI
+          safety. This site is for the rest — photos, video, half-baked notes,
+          and whatever I'm playing with this week.
+        </p>
+
+        <div class="switcher-row">
+          <span class="mono dim">paint the room:</span>
+          <ThemeSwitcher />
+        </div>
+      </div>
+
+      <aside class="hero-shapes" aria-label="Grab a corner of any shape and pull">
+        <div class="shape-cell s1">
+          <Peel corner="tr" label="Peel the orange blob" aspect="1 / 1">
+            <Fragment slot="top">
+              <FunkyShape variant={1} fill="var(--shape-1)" rotate={-6} />
+            </Fragment>
+            <Fragment slot="back">
+              <p class="reveal-text">
+                <strong>cs + math</strong><br />
+                <span class="mono dim">bachelor's coursework in algorithms, probability, linear algebra, and category theory.</span>
+              </p>
+            </Fragment>
+          </Peel>
+        </div>
+
+        <div class="shape-cell s2">
+          <Peel corner="bl" label="Peel the green blob" aspect="1 / 1">
+            <Fragment slot="top">
+              <FunkyShape variant={3} fill="var(--shape-2)" rotate={8} />
+            </Fragment>
+            <Fragment slot="back">
+              <p class="reveal-text">
+                <strong>psychology</strong><br />
+                <span class="mono dim">cognition, perception, and how humans form beliefs under uncertainty.</span>
+              </p>
+            </Fragment>
+          </Peel>
+        </div>
+
+        <div class="shape-cell s3">
+          <Peel corner="tl" label="Peel the peach blob" aspect="1 / 1">
+            <Fragment slot="top">
+              <FunkyShape variant={2} fill="var(--shape-3)" rotate={-12} />
+            </Fragment>
+            <Fragment slot="back">
+              <p class="reveal-text">
+                <strong>ai safety</strong><br />
+                <span class="mono dim">alignment, interpretability, and making systems legible to the humans who depend on them.</span>
+              </p>
+            </Fragment>
+          </Peel>
+        </div>
+
+        <div class="shape-cell s4">
+          <Peel corner="br" label="Peel the blue blob" aspect="1 / 1">
+            <Fragment slot="top">
+              <FunkyShape variant={5} fill="var(--shape-4)" rotate={4} />
+            </Fragment>
+            <Fragment slot="back">
+              <p class="reveal-text">
+                <strong>making things</strong><br />
+                <span class="mono dim">photos, video, small tools, and the occasional too-long essay.</span>
+              </p>
+            </Fragment>
+          </Peel>
+        </div>
+      </aside>
+    </header>
+
+    <section class="teasers">
+      <a class="teaser mono" href={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/hobbies`}>
+        <span class="num">01</span> hobbies → <span class="dim">looping videos of what i do offline</span>
+      </a>
+      <a class="teaser mono" href={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/photography`}>
+        <span class="num">02</span> photography → <span class="dim">a running journal of things I noticed</span>
+      </a>
+      <a class="teaser mono" href={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/writing`}>
+        <span class="num">03</span> writing → <span class="dim">essays, notes, projects</span>
+      </a>
+      <a class="teaser mono" href={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/garden`}>
+        <span class="num">04</span> garden → <span class="dim">half-baked notes, safety + psych</span>
+      </a>
+    </section>
+
+    <footer class="foot">
+      <span class="mono dim">
+        repainted <span data-repaint-count>0</span> times ·
+        <a href="https://github.com/afitabiyigun">github</a> ·
+        <span class="hint">(try dragging a corner of any shape above)</span>
+      </span>
+    </footer>
+  </div>
+</Base>
+
+<style>
+  .hero {
+    padding: 3rem 0 5rem;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  @media (max-width: 840px) {
+    .hero { grid-template-columns: 1fr; gap: 3rem; }
+  }
+  .eyebrow {
+    color: var(--muted);
+    margin: 0 0 1.2rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    text-transform: lowercase;
+  }
+  h1 { max-width: 22ch; }
+  .accent { color: var(--accent-1); }
+  em { font-style: italic; color: var(--accent-2); }
+  .lede { font-size: 1.15rem; margin-top: 1.4rem; }
+  .switcher-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 2.6rem;
+    flex-wrap: wrap;
+  }
+  .dim { color: var(--muted); font-size: 0.85rem; }
+  .hint { opacity: 0.7; }
+
+  .hero-shapes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 18px;
+  }
+  .shape-cell { width: 100%; }
+  .reveal-text {
+    font-size: 0.95rem;
+    max-width: 24ch;
+    margin: 0 auto;
+    color: var(--ink);
+  }
+
+  .teasers {
+    display: grid;
+    gap: 1px;
+    background: var(--rule);
+    margin: 3rem 0 4rem;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .teaser {
+    padding: 1rem 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 1rem;
+    background-image: none;
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+    transition: padding 200ms ease, background 200ms ease;
+  }
+  .teaser:hover { padding-left: 0.8rem; background: var(--bg-soft); background-image: none; }
+  .num { color: var(--accent-1); font-weight: 600; }
+  .foot {
+    padding: 3rem 0 2rem;
+    border-top: 1px solid var(--rule);
+    opacity: 0.9;
+  }
+</style>
+
+<script>
+  // Mirror the palette-switch counter into the footer.
+  const el = document.querySelector<HTMLElement>('[data-repaint-count]');
+  if (el) {
+    try {
+      const n = Number(localStorage.getItem('afit-palette-switches') || '0');
+      el.textContent = String(n);
+    } catch (_) {}
+    document.addEventListener('afit:repaint', (e) => {
+      const detail = (e as CustomEvent).detail as { count: number };
+      el.textContent = String(detail.count);
+    });
+  }
+</script>

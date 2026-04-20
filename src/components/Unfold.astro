@@ -1,0 +1,180 @@
+---
+/*
+  Unfold: unbounded drag-to-grow primitive.
+  Each of the four corners is a draggable handle. Pulling a corner outward
+  grows the element's width/height by exactly the drag distance (1:1). Pulling
+  inward shrinks it back. There's no snap — the element rests at whatever
+  size you dragged it to.
+
+  Works for any content in the default slot: SVG shapes, <video>, <iframe>,
+  <img>, or arbitrary HTML.
+
+  Usage:
+    <Unfold corners="all" minW={140} minH={140}>
+      <FunkyShape variant={2} />
+    </Unfold>
+
+  corners: 'all' | 'tr' | 'tr,bl' | ... — controls which handles render.
+*/
+
+interface Props {
+  corners?: string;  // comma-separated subset of tl,tr,bl,br, or 'all'
+  minW?: number;
+  minH?: number;
+  maxW?: number;
+  maxH?: number;
+  startW?: number;   // initial rendered width in px (optional)
+  startH?: number;   // initial rendered height in px (optional)
+  label?: string;    // aria-label prefix for handles
+  class?: string;
+  rounded?: boolean;
+}
+
+const {
+  corners = 'all',
+  minW = 120,
+  minH = 90,
+  maxW,
+  maxH,
+  startW,
+  startH,
+  label = 'shape',
+  class: className,
+  rounded = false,
+} = Astro.props;
+
+const activeCorners = corners === 'all'
+  ? ['tl', 'tr', 'bl', 'br']
+  : corners.split(',').map((c) => c.trim()).filter((c) => ['tl', 'tr', 'bl', 'br'].includes(c));
+
+const styleVars = [
+  `--unfold-min-w:${minW}px`,
+  `--unfold-min-h:${minH}px`,
+  maxW ? `--unfold-max-w:${maxW}px` : null,
+  maxH ? `--unfold-max-h:${maxH}px` : null,
+  startW ? `--unfold-start-w:${startW}px` : null,
+  startH ? `--unfold-start-h:${startH}px` : null,
+].filter(Boolean).join(';');
+---
+
+<div
+  class:list={['unfold', { 'unfold--round': rounded }, className]}
+  data-unfold
+  data-unfold-state="idle"
+  style={styleVars}
+>
+  <div class="unfold-content">
+    <slot />
+  </div>
+
+  {activeCorners.map((c) => (
+    <button
+      type="button"
+      class={`unfold-handle unfold-handle--${c}`}
+      data-corner={c}
+      aria-label={`Drag ${c} corner to resize ${label}`}
+    >
+      <span class="dot" aria-hidden="true"></span>
+    </button>
+  ))}
+</div>
+
+<style>
+  .unfold {
+    position: relative;
+    display: inline-block;
+    /* touch-action gets disabled only on the handles so the page still
+       scrolls when a user swipes the shape itself. */
+  }
+  .unfold--round .unfold-content { border-radius: var(--radius); }
+
+  .unfold-content {
+    position: relative;
+    width: var(--unfold-start-w, 180px);
+    height: var(--unfold-start-h, 180px);
+    min-width: var(--unfold-min-w, 120px);
+    min-height: var(--unfold-min-h, 90px);
+    max-width: var(--unfold-max-w, 95vw);
+    max-height: var(--unfold-max-h, 95vh);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    /* Subtle shadow so the shape reads as a pickable object, not a
+       background flourish. Falls away to nothing in Riso / midnight. */
+    transition: box-shadow 200ms ease;
+  }
+  .unfold-content > :global(*) {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .unfold-content :global(svg),
+  .unfold-content :global(iframe),
+  .unfold-content :global(video),
+  .unfold-content :global(img) {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  .unfold[data-unfold-state='dragging'] .unfold-content {
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+  }
+
+  .unfold-handle {
+    position: absolute;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    cursor: grab;
+    z-index: 3;
+    touch-action: none;
+    border-radius: 50%;
+  }
+  .unfold-handle--tl { top: -10px;   left: -10px; }
+  .unfold-handle--tr { top: -10px;   right: -10px; }
+  .unfold-handle--bl { bottom: -10px; left: -10px; }
+  .unfold-handle--br { bottom: -10px; right: -10px; }
+
+  .unfold-handle .dot {
+    position: absolute;
+    inset: 10px;
+    border-radius: 50%;
+    background: var(--ink);
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 160ms ease, transform 160ms ease;
+    box-shadow: 0 0 0 2px var(--bg);
+  }
+  .unfold:hover .unfold-handle .dot,
+  .unfold-handle:focus-visible .dot {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  .unfold-handle:focus-visible {
+    outline: 2px solid var(--accent-1);
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .unfold-handle { cursor: pointer; }
+    .unfold-handle .dot { opacity: 0.9 !important; transform: scale(1) !important; }
+  }
+
+  /* Debug mode (Konami) — outline handles + content box. */
+  :global(html.peel-debug) .unfold-content {
+    outline: 2px dashed #1f3cff;
+    outline-offset: 2px;
+  }
+  :global(html.peel-debug) .unfold-handle .dot {
+    opacity: 1 !important;
+    background: #ff3ea5;
+  }
+</style>
+
+<script>
+  import '../scripts/unfold.ts';
+</script>

@@ -1,0 +1,68 @@
+---
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+import { getCollection } from 'astro:content';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const notes = (await getCollection('garden')).sort(
+  (a, b) => b.data.updated.valueOf() - a.data.updated.valueOf()
+);
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+const statusEmoji = { seedling: '🌱', budding: '🌿', evergreen: '🌳' } as const;
+---
+
+<Base title="garden · afit">
+  <div class="container">
+    <Nav />
+    <header class="head">
+      <p class="eyebrow mono">§ 04 · garden</p>
+      <h1>Half-baked notes, growing in public.</h1>
+      <p class="lede">Nothing here is polished. Each note carries a growth stage and a confidence level you can argue with.</p>
+    </header>
+
+    <ul class="grid">
+      {notes.map((n) => (
+        <li>
+          <a href={`${base}/garden/${n.slug}`} class="card">
+            <span class="status mono">
+              {statusEmoji[n.data.status]} <span class="dim">{n.data.status}</span>
+            </span>
+            <h3>{n.data.title}</h3>
+            <span class="meta mono dim">
+              updated {fmt(n.data.updated)}
+              · conf {n.data.confidence.toFixed(2)}
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .head { padding: 3rem 0 2rem; }
+  .eyebrow { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: lowercase; margin: 0 0 1rem; }
+  .lede { font-size: 1.1rem; color: var(--ink-soft); max-width: 62ch; }
+
+  .grid {
+    list-style: none; padding: 0; margin: 0 0 5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .card {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1.3rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--bg-soft);
+    color: var(--ink);
+    background-image: none;
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: var(--shadow); background-image: none; }
+  .card h3 { margin: 0; font-size: 1.1rem; }
+  .status { font-size: 0.82rem; }
+  .meta { font-size: 0.8rem; }
+</style>

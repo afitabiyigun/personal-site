@@ -1,0 +1,81 @@
+---
+interface Props {
+  title: string;
+  mood?: string;
+  platform: 'youtube' | 'vimeo';
+  url: string;
+  aspect?: string;
+  description?: string;
+}
+const { title, mood, platform, url, aspect = '16 / 9', description } = Astro.props;
+---
+
+<figure class="video" style={`--aspect:${aspect}`}>
+  <div class="frame">
+    <iframe
+      src={url}
+      title={title}
+      loading="lazy"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+  </div>
+  <figcaption>
+    <span class="title">{title}</span>
+    {mood && <span class="mood" aria-label={`mood: ${mood}`}>{mood}</span>}
+    <span class="platform mono dim">{platform}</span>
+    {description && <p class="desc">{description}</p>}
+  </figcaption>
+</figure>
+
+<style>
+  .video {
+    margin: 0;
+    display: grid;
+    gap: 0.6rem;
+    break-inside: avoid;
+  }
+  .frame {
+    aspect-ratio: var(--aspect, 16 / 9);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-soft);
+    box-shadow: var(--shadow);
+  }
+  .frame iframe {
+    width: 100%; height: 100%;
+    border: 0; display: block;
+  }
+  figcaption {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    flex-wrap: wrap;
+    font-size: 0.95rem;
+  }
+  .title { font-weight: 500; color: var(--ink); }
+  .mood {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent-1);
+    padding: 2px 8px;
+    border: 1px solid var(--accent-1);
+    border-radius: 999px;
+    transition: transform 300ms ease;
+  }
+  .video:hover .mood {
+    animation: wiggle 400ms ease-in-out;
+  }
+  @keyframes wiggle {
+    0%,100% { transform: rotate(0); }
+    25% { transform: rotate(-6deg); }
+    75% { transform: rotate(6deg); }
+  }
+  .platform { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .dim { color: var(--muted); }
+  .desc { width: 100%; color: var(--muted); font-size: 0.88rem; margin: 0.2rem 0 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .video:hover .mood { animation: none; }
+  }
+</style>

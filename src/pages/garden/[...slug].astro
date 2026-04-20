@@ -1,0 +1,144 @@
+---
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('garden');
+  return notes.map((n) => ({ params: { slug: n.slug }, props: { note: n } }));
+}
+
+const { note } = Astro.props;
+const { Content } = await note.render();
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+const statusEmoji = { seedling: '🌱', budding: '🌿', evergreen: '🌳' } as const;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base title={`${note.data.title} · garden · afit`}>
+  <div class="container">
+    <Nav />
+    <article class="note">
+      <header>
+        <p class="eyebrow mono">§ 04 · garden · updated {fmt(note.data.updated)}</p>
+        <h1>{note.data.title}</h1>
+        <div class="chips">
+          <span class="chip status mono">
+            {statusEmoji[note.data.status]} {note.data.status}
+          </span>
+          <label class="chip confidence">
+            <span class="mono">confidence</span>
+            <input
+              type="range"
+              min="0" max="1" step="0.01"
+              value={note.data.confidence}
+              data-confidence={note.slug}
+              aria-label="Reader confidence override (local only)"
+            />
+            <output class="mono" data-confidence-out>{note.data.confidence.toFixed(2)}</output>
+          </label>
+          {note.data.tags.length > 0 && (
+            <span class="chip tags mono">
+              {note.data.tags.map((t: string) => <span class="tag">#{t}</span>)}
+            </span>
+          )}
+        </div>
+      </header>
+      <div class="prose">
+        <Content />
+      </div>
+
+      {note.data.links.length > 0 && (
+        <aside class="links">
+          <p class="mono dim">linked notes:</p>
+          <ul>
+            {note.data.links.map((l: string) => (
+              <li><a href={`${base}/garden/${l}`}>{l}</a></li>
+            ))}
+          </ul>
+        </aside>
+      )}
+    </article>
+  </div>
+
+  {/* Scroll-activated "loss curve" easter egg. */}
+  <svg class="loss-curve" viewBox="0 0 120 60" aria-hidden="true">
+    <polyline points="0,58 20,40 40,28 60,20 80,15 100,12 120,11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  </svg>
+</Base>
+
+<style>
+  .note { padding: 2rem 0 5rem; max-width: 66ch; margin-inline: auto; }
+  .eyebrow { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: lowercase; margin: 0 0 0.6rem; }
+  .dim { color: var(--muted); }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.2rem;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 6px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: var(--bg-soft);
+    font-size: 0.82rem;
+  }
+  .confidence input[type='range'] {
+    width: 110px;
+    accent-color: var(--accent-1);
+  }
+  .tag { color: var(--accent-1); }
+
+  .prose :global(p) { margin: 1.2rem 0; }
+  .prose :global(a) { color: var(--accent-1); }
+
+  .links { margin-top: 3rem; padding: 1.4rem; border: 1px dashed var(--rule); border-radius: var(--radius); }
+  .links ul { list-style: none; padding: 0; margin: 0.4rem 0 0; display: flex; gap: 0.8rem; flex-wrap: wrap; }
+
+  .loss-curve {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    width: 80px;
+    height: 40px;
+    color: var(--accent-1);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 400ms ease, transform 400ms ease;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .loss-curve.show { opacity: 0.85; transform: translateY(0); }
+</style>
+
+<script>
+  // Reader-confidence override, persisted in localStorage (easter egg).
+  const slider = document.querySelector<HTMLInputElement>('input[data-confidence]');
+  const out = document.querySelector<HTMLOutputElement>('output[data-confidence-out]');
+  if (slider && out) {
+    const slug = slider.dataset.confidence!;
+    const key = `afit-confidence:${slug}`;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) { slider.value = saved; out.textContent = Number(saved).toFixed(2); }
+    } catch (_) {}
+    slider.addEventListener('input', () => {
+      out.textContent = Number(slider.value).toFixed(2);
+      try { localStorage.setItem(key, slider.value); } catch (_) {}
+    });
+  }
+
+  // Scroll-activated loss curve in the corner.
+  const curve = document.querySelector<SVGElement>('.loss-curve');
+  if (curve) {
+    window.addEventListener('scroll', () => {
+      const past = window.scrollY > window.innerHeight * 0.5;
+      curve.classList.toggle('show', past);
+    }, { passive: true });
+  }
+</script>

@@ -1,0 +1,59 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Peel from '../components/Peel.astro';
+import FunkyShape from '../components/FunkyShape.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base title="not found · afit">
+  <div class="container">
+    <Nav />
+    <section class="wrap">
+      <div class="text">
+        <p class="eyebrow mono">§ 404 · page not found</p>
+        <h1>You're off the map.<br/><span class="dim">(peel the corner)</span></h1>
+        <p class="lede">Whatever you meant to land on isn't here. Pull the corner of the shape for a sitemap, or head back home.</p>
+        <p><a href={`${base}/`}>&larr; home</a></p>
+      </div>
+
+      <div class="shape">
+        <Peel corner="tr" label="Peel to see sitemap" aspect="1 / 1">
+          <Fragment slot="top">
+            <FunkyShape variant={4} fill="var(--shape-1)" />
+          </Fragment>
+          <Fragment slot="back">
+            <div class="sitemap mono">
+              <p class="dim">where you might've meant to go:</p>
+              <ul>
+                <li><a href={`${base}/`}>home</a></li>
+                <li><a href={`${base}/hobbies`}>hobbies</a></li>
+                <li><a href={`${base}/photography`}>photography</a></li>
+                <li><a href={`${base}/writing`}>writing</a></li>
+                <li><a href={`${base}/garden`}>garden</a></li>
+              </ul>
+            </div>
+          </Fragment>
+        </Peel>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .wrap {
+    padding: 4rem 0 6rem;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+  @media (max-width: 840px) { .wrap { grid-template-columns: 1fr; } }
+  .eyebrow { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: lowercase; margin: 0 0 1rem; }
+  .dim { color: var(--muted); }
+  .lede { font-size: 1.1rem; }
+  .shape { max-width: 380px; margin: 0 auto; width: 100%; }
+  .sitemap { padding: 1rem; }
+  .sitemap ul { list-style: none; padding: 0; margin: 0.5rem 0 0; display: grid; gap: 0.3rem; }
+</style>

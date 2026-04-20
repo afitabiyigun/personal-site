@@ -1,0 +1,76 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import VideoEmbed from '../components/VideoEmbed.astro';
+import videos from '../data/videos.json';
+
+type Video = {
+  title: string;
+  mood?: string;
+  platform: 'youtube' | 'vimeo';
+  url: string;
+  aspect?: string;
+  description?: string;
+};
+
+const items = videos as Video[];
+
+// Hidden ?speed=2 doubles every embed's playbackRate — wired on the client.
+---
+
+<Base title="hobbies · afit">
+  <div class="container">
+    <Nav />
+    <header class="head">
+      <p class="eyebrow mono">§ 01 · hobbies</p>
+      <h1>Things I do with the rest of the hours.</h1>
+      <p class="lede">Short clips in no particular order. Grab the <code>?speed=2</code> easter egg for a fun demo.</p>
+    </header>
+
+    <section class="grid">
+      {items.map((v) => (
+        <VideoEmbed
+          title={v.title}
+          mood={v.mood}
+          platform={v.platform}
+          url={v.url}
+          aspect={v.aspect}
+          description={v.description}
+        />
+      ))}
+    </section>
+  </div>
+</Base>
+
+<style>
+  .head { padding: 3rem 0 2rem; }
+  .eyebrow { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: lowercase; margin: 0 0 1rem; }
+  .lede { font-size: 1.1rem; color: var(--ink-soft); max-width: 62ch; }
+
+  .grid {
+    columns: 3 260px;
+    column-gap: 2rem;
+    padding-bottom: 4rem;
+  }
+  .grid :global(.video) { margin-bottom: 2rem; }
+</style>
+
+<script>
+  // ?speed=2 → attempt to double every YouTube iframe's playbackRate via postMessage.
+  const params = new URLSearchParams(location.search);
+  const speed = Number(params.get('speed'));
+  if (speed && speed > 0 && speed <= 4) {
+    document.querySelectorAll<HTMLIFrameElement>('iframe').forEach((f) => {
+      // YouTube iframe API via postMessage (requires ?enablejsapi=1 on the src for full support,
+      // but a best-effort message gets through for most embeds).
+      f.addEventListener('load', () => {
+        try {
+          f.contentWindow?.postMessage(
+            JSON.stringify({ event: 'command', func: 'setPlaybackRate', args: [speed] }),
+            '*'
+          );
+        } catch (_) {}
+      });
+    });
+  }
+</script>

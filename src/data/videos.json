@@ -1,0 +1,26 @@
+[
+  {
+    "title": "morning run",
+    "mood": "slow",
+    "platform": "youtube",
+    "url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "aspect": "16 / 9",
+    "description": "Placeholder — swap for a clip of a hobby (running, cooking, making something)."
+  },
+  {
+    "title": "mess around",
+    "mood": "chaos",
+    "platform": "youtube",
+    "url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "aspect": "9 / 16",
+    "description": "Placeholder — a vertical video works great here."
+  },
+  {
+    "title": "pattern practice",
+    "mood": "pattern",
+    "platform": "vimeo",
+    "url": "https://player.vimeo.com/video/76979871",
+    "aspect": "16 / 9",
+    "description": "Placeholder — replace with an actual Vimeo URL."
+  }
+]

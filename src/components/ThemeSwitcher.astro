@@ -1,0 +1,129 @@
+---
+/*
+  Three-way palette switcher. Renders three slim sliders labeled
+  Paper / Pastel / Riso. Moving any slider sets :root[data-theme]
+  and persists to localStorage.
+
+  Secret 4th theme "midnight" is unlocked by clicking the logo 7 times
+  (logo handles the unlock; this component listens for the unlock event
+  and adds a 4th tick).
+*/
+---
+
+<div class="theme-switcher" role="radiogroup" aria-label="Site palette">
+  <button class="chip" role="radio" aria-checked="true"  data-theme="paper">
+    <span class="swatch" style="background: linear-gradient(135deg, #f6f1e7, #d9663b)"></span>
+    <span class="label">paper</span>
+  </button>
+  <button class="chip" role="radio" aria-checked="false" data-theme="pastel">
+    <span class="swatch" style="background: linear-gradient(135deg, #bfe4db, #e6d9ff)"></span>
+    <span class="label">pastel</span>
+  </button>
+  <button class="chip" role="radio" aria-checked="false" data-theme="riso">
+    <span class="swatch" style="background: linear-gradient(135deg, #1f3cff, #ff3ea5)"></span>
+    <span class="label">riso</span>
+  </button>
+  <button class="chip hidden-chip" role="radio" aria-checked="false" data-theme="midnight" hidden>
+    <span class="swatch" style="background: linear-gradient(135deg, #0c0f1a, #8ae6ff)"></span>
+    <span class="label">midnight</span>
+  </button>
+</div>
+
+<style>
+  .theme-switcher {
+    display: inline-flex;
+    gap: 6px;
+    padding: 6px;
+    background: var(--bg-soft);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    box-shadow: var(--shadow);
+    flex-wrap: wrap;
+  }
+  .chip[hidden] { display: none; }
+  .chip {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--ink-soft);
+    font: inherit;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    padding: 6px 12px 6px 6px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+  }
+  .chip:hover { transform: translateY(-1px); }
+  .chip[aria-checked='true'] {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .swatch {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.08);
+    display: inline-block;
+  }
+  .chip:focus-visible {
+    outline: 2px solid var(--accent-1);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  type Theme = 'paper' | 'pastel' | 'riso' | 'midnight';
+  const STORAGE_KEY = 'afit-theme';
+  const COUNT_KEY = 'afit-palette-switches';
+
+  function applyTheme(theme: Theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem(STORAGE_KEY, theme); } catch (_) {}
+
+    // Update favicon if one matches.
+    const favicon = document.getElementById('favicon') as HTMLLinkElement | null;
+    if (favicon) {
+      const base = favicon.href.replace(/\/favicon-[a-z]+\.svg$/, '');
+      favicon.href = `${base}/favicon-${theme}.svg`;
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('.theme-switcher .chip').forEach((chip) => {
+      chip.setAttribute('aria-checked', chip.dataset.theme === theme ? 'true' : 'false');
+    });
+
+    // Bump the site-wide "repaint" counter (easter egg in footer).
+    try {
+      const n = Number(localStorage.getItem(COUNT_KEY) || '0') + 1;
+      localStorage.setItem(COUNT_KEY, String(n));
+      document.dispatchEvent(new CustomEvent('afit:repaint', { detail: { count: n } }));
+    } catch (_) {}
+  }
+
+  function init() {
+    const current = (document.documentElement.getAttribute('data-theme') as Theme) || 'paper';
+    document.querySelectorAll<HTMLButtonElement>('.theme-switcher .chip').forEach((chip) => {
+      chip.setAttribute('aria-checked', chip.dataset.theme === current ? 'true' : 'false');
+      chip.addEventListener('click', () => {
+        const theme = chip.dataset.theme as Theme;
+        applyTheme(theme);
+      });
+    });
+
+    // Listen for the midnight unlock event (fired by the Logo after 7 clicks).
+    document.addEventListener('afit:unlock-midnight', () => {
+      document.querySelectorAll<HTMLElement>('.theme-switcher .hidden-chip').forEach((el) => {
+        el.hidden = false;
+      });
+    }, { once: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  document.addEventListener('astro:page-load', init);
+</script>

@@ -1,0 +1,57 @@
+---
+import Logo from './Logo.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const links = [
+  { href: `${base}/hobbies`, label: 'hobbies' },
+  { href: `${base}/photography`, label: 'photography' },
+  { href: `${base}/writing`, label: 'writing' },
+  { href: `${base}/garden`, label: 'garden' },
+];
+const here = Astro.url.pathname.replace(/\/$/, '');
+---
+
+<nav class="nav">
+  <Logo />
+  <ul>
+    {links.map((l) => {
+      const active = here === l.href.replace(/\/$/, '');
+      return (
+        <li>
+          <a href={l.href} class:list={[{ active }]}>{l.label}</a>
+        </li>
+      );
+    })}
+  </ul>
+</nav>
+
+<style>
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.8rem 0;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  ul {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+  }
+  a {
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+    background: none;
+  }
+  a:hover { color: var(--ink); background: none; }
+  a.active {
+    color: var(--ink);
+    background-image: linear-gradient(var(--accent-1), var(--accent-1));
+    background-size: 100% 2px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+  }
+</style>

@@ -1,0 +1,109 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+
+const entries = (await getCollection('photography')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+---
+
+<Base title="photography · afit">
+  <div class="container">
+    <Nav />
+    <header class="head">
+      <p class="eyebrow mono">§ 02 · photography</p>
+      <h1>A journal of things I noticed.</h1>
+      <p class="lede">Hover a photo for its contact-sheet metadata.</p>
+    </header>
+
+    <section class="grid">
+      {entries.map((e, i) => (
+        <figure class={`photo ${i % 10 === 9 ? 'photo--grain' : ''}`}>
+          <div class="img-wrap">
+            <Image src={e.data.photo} alt={e.data.caption} widths={[480, 960, 1440]} sizes="(min-width: 700px) 50vw, 100vw" />
+            {e.data.exif && (
+              <div class="exif mono" aria-hidden="true">
+                <span>{fmt(e.data.date)}</span>
+                <span>{e.data.location}</span>
+                {e.data.exif.camera && <span>cam · {e.data.exif.camera}</span>}
+                {e.data.exif.lens && <span>lens · {e.data.exif.lens}</span>}
+                {e.data.exif.shutter && <span>shutter · {e.data.exif.shutter}</span>}
+                {e.data.exif.aperture && <span>{e.data.exif.aperture}</span>}
+                {e.data.exif.iso && <span>ISO {e.data.exif.iso}</span>}
+              </div>
+            )}
+          </div>
+          <figcaption>
+            <strong>{e.data.title}</strong>
+            <span class="dim mono"> · {fmt(e.data.date)} · {e.data.location}</span>
+            <p>{e.data.caption}</p>
+          </figcaption>
+        </figure>
+      ))}
+    </section>
+  </div>
+</Base>
+
+<style>
+  .head { padding: 3rem 0 2rem; }
+  .eyebrow { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: lowercase; margin: 0 0 1rem; }
+  .lede { font-size: 1.1rem; color: var(--ink-soft); max-width: 62ch; }
+
+  .grid {
+    display: grid;
+    gap: 3rem;
+    padding-bottom: 4rem;
+  }
+  .photo { margin: 0; }
+  .img-wrap {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .img-wrap :global(img) {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 400ms ease;
+  }
+  .photo:hover .img-wrap :global(img) { transform: scale(1.02); }
+
+  .exif {
+    position: absolute;
+    inset: auto 10px 10px auto;
+    display: flex;
+    gap: 10px;
+    padding: 6px 10px;
+    background: rgba(28, 27, 24, 0.7);
+    color: #f6f1e7;
+    font-size: 0.72rem;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 240ms ease;
+    flex-wrap: wrap;
+    max-width: min(80%, 420px);
+    backdrop-filter: blur(6px);
+  }
+  .photo:hover .exif { opacity: 1; }
+
+  .photo--grain .img-wrap::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='1' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/></svg>");
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    opacity: calc(0.4 + var(--grain, 0) * 0.6);
+  }
+
+  figcaption { padding: 1rem 0.2rem 0; }
+  figcaption p { margin: 0.4rem 0 0; color: var(--ink-soft); }
+  .dim { color: var(--muted); font-size: 0.85rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .photo:hover .img-wrap :global(img) { transform: none; }
+  }
+</style>
