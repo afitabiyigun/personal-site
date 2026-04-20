@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
-import VideoEmbed from '../components/VideoEmbed.astro';
+import CassetteTape from '../components/CassetteTape.astro';
 import videos from '../data/videos.json';
 
 type Video = {
@@ -15,7 +15,9 @@ type Video = {
 
 const items = videos as Video[];
 
-// Hidden ?speed=2 doubles every embed's playbackRate — wired on the client.
+// Tape colors cycle through the current palette's accent variables.
+const palette = ['var(--shape-1)', 'var(--shape-2)', 'var(--shape-3)', 'var(--shape-4)', 'var(--accent-1)', 'var(--accent-2)'];
+const labelBgs = ['var(--bg)', 'var(--bg-soft)'];
 ---
 
 <Base title="hobbies · afit">
@@ -23,22 +25,60 @@ const items = videos as Video[];
     <Nav />
     <header class="head">
       <p class="eyebrow mono">§ 01 · hobbies</p>
-      <h1>Things I do with the rest of the hours.</h1>
-      <p class="lede">Short clips in no particular order. Grab the <code>?speed=2</code> easter egg for a fun demo.</p>
+      <h1>Pop a tape into the deck.</h1>
+      <p class="lede">
+        Each hobby is a cassette. <strong>Drag one onto the deck</strong> (or double-click it) and it plays.
+        <strong>Eject</strong> to put it back. The tapes on the shelf have weight — you can chuck them around.
+      </p>
     </header>
 
-    <section class="grid">
-      {items.map((v) => (
-        <VideoEmbed
-          title={v.title}
-          mood={v.mood}
-          platform={v.platform}
-          url={v.url}
-          aspect={v.aspect}
-          description={v.description}
-        />
-      ))}
+    <section class="room" data-cassette-deck>
+      {/* ---------- The deck ---------- */}
+      <div class="deck" data-deck>
+        <div class="deck-top">
+          <div class="deck-brand mono">AFIT · model 01</div>
+          <div class="deck-leds">
+            <span class="led" style="--c:var(--accent-1)"></span>
+            <span class="led" style="--c:var(--accent-2)"></span>
+            <span class="led" style="--c:var(--accent-3)"></span>
+          </div>
+        </div>
+
+        <div class="deck-screen" data-screen>
+          {/* populated with an <iframe> when a tape is loaded */}
+        </div>
+
+        <div class="deck-bottom">
+          <div class="deck-slot" data-slot aria-label="Drop a cassette here">
+            <span class="slot-label mono">drop tape</span>
+          </div>
+          <div class="deck-meta">
+            <span class="deck-label mono" data-label>— no tape —</span>
+            <button class="eject mono" data-eject type="button" aria-label="Eject">▲ eject</button>
+          </div>
+        </div>
+      </div>
+
+      {/* ---------- The shelf ---------- */}
+      <div class="shelf" data-shelf aria-label="Shelf of cassette tapes (draggable)">
+        {items.map((v, i) => (
+          <CassetteTape
+            id={`tape-${i}`}
+            title={v.title}
+            mood={v.mood}
+            url={v.url}
+            color={palette[i % palette.length]}
+            labelBg={labelBgs[i % labelBgs.length]}
+            rotation={(i % 2 === 0 ? -1 : 1) * (3 + (i * 3) % 8)}
+          />
+        ))}
+        <p class="shelf-hint mono">drag me → deck</p>
+      </div>
     </section>
+
+    <aside class="note mono dim">
+      reduced-motion friendly: if you've turned motion down in the OS, double-click still loads a tape; the shelf just won't throw them around.
+    </aside>
   </div>
 </Base>
 
@@ -47,30 +87,180 @@ const items = videos as Video[];
   .eyebrow { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: lowercase; margin: 0 0 1rem; }
   .lede { font-size: 1.1rem; color: var(--ink-soft); max-width: 62ch; }
 
-  .grid {
-    columns: 3 260px;
-    column-gap: 2rem;
-    padding-bottom: 4rem;
+  .room {
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) 1.2fr;
+    gap: 2.4rem;
+    align-items: start;
+    padding-bottom: 3rem;
   }
-  .grid :global(.video) { margin-bottom: 2rem; }
+  @media (max-width: 860px) {
+    .room { grid-template-columns: 1fr; }
+  }
+
+  /* ===== Deck ===== */
+  .deck {
+    position: sticky;
+    top: 1rem;
+    background: linear-gradient(180deg, var(--bg-soft) 0%, var(--bg) 100%);
+    border: 1px solid var(--rule);
+    border-radius: calc(var(--radius) * 1.4);
+    box-shadow: var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.3);
+    padding: 1rem;
+    display: grid;
+    gap: 0.9rem;
+  }
+  .deck-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.2rem 0.2rem 0;
+    border-bottom: 1px dashed var(--rule);
+    padding-bottom: 0.6rem;
+  }
+  .deck-brand {
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .deck-leds {
+    display: flex;
+    gap: 6px;
+  }
+  .led {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--c);
+    opacity: 0.3;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1) inset;
+    transition: opacity 300ms ease;
+  }
+  .deck.is-playing .led { opacity: 1; animation: led-blink 1.8s ease-in-out infinite; }
+  .deck.is-playing .led:nth-child(2) { animation-delay: 0.4s; }
+  .deck.is-playing .led:nth-child(3) { animation-delay: 0.8s; }
+  @keyframes led-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .deck.is-playing .led { animation: none; }
+  }
+
+  .deck-screen {
+    aspect-ratio: 16 / 9;
+    background: #0a0a0d;
+    border-radius: var(--radius);
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,0.6), inset 0 0 40px rgba(0,0,0,0.6);
+    overflow: hidden;
+    position: relative;
+  }
+  .deck-screen:empty::before {
+    content: '— idle —';
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: rgba(255,255,255,0.3);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.2em;
+  }
+  .deck-screen iframe {
+    width: 100%; height: 100%;
+    border: 0; display: block;
+  }
+
+  .deck-bottom {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    align-items: stretch;
+  }
+  .deck-slot {
+    min-height: 60px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.1);
+    border: 2px dashed var(--rule);
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+    transition: background 180ms ease, border-color 180ms ease;
+  }
+  .deck-slot.is-hot {
+    background: var(--accent-1);
+    border-color: var(--accent-1);
+    color: var(--bg);
+  }
+  .slot-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .deck-meta {
+    display: grid;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.04);
+    font-size: 0.8rem;
+  }
+  .deck-label {
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .eject {
+    appearance: none;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    justify-self: end;
+    transition: background 180ms ease, color 180ms ease;
+  }
+  .eject:hover { background: var(--ink); color: var(--bg); }
+
+  /* ===== Shelf ===== */
+  .shelf {
+    position: relative;
+    min-height: 520px;
+    border: 1px solid var(--rule);
+    border-radius: calc(var(--radius) * 1.2);
+    background:
+      repeating-linear-gradient(
+        90deg,
+        rgba(0,0,0,0.02) 0 2px, transparent 2px 40px
+      ),
+      var(--bg-soft);
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.04), var(--shadow);
+    padding: 1rem;
+    overflow: hidden;
+  }
+  .shelf-hint {
+    position: absolute;
+    right: 14px; bottom: 10px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .note {
+    display: block;
+    padding: 1rem 0 3rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
 </style>
 
 <script>
-  // ?speed=2 → attempt to double every YouTube iframe's playbackRate via postMessage.
-  const params = new URLSearchParams(location.search);
-  const speed = Number(params.get('speed'));
-  if (speed && speed > 0 && speed <= 4) {
-    document.querySelectorAll<HTMLIFrameElement>('iframe').forEach((f) => {
-      // YouTube iframe API via postMessage (requires ?enablejsapi=1 on the src for full support,
-      // but a best-effort message gets through for most embeds).
-      f.addEventListener('load', () => {
-        try {
-          f.contentWindow?.postMessage(
-            JSON.stringify({ event: 'command', func: 'setPlaybackRate', args: [speed] }),
-            '*'
-          );
-        } catch (_) {}
-      });
-    });
-  }
+  import '../scripts/cassette-deck.ts';
 </script>

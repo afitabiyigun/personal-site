@@ -1,0 +1,145 @@
+---
+/*
+  A single cassette tape. Stylized, with two reels, a colored label, and
+  the hobby title. Positioning + physics is wired by src/scripts/cassette-deck.ts.
+*/
+interface Props {
+  id: string;
+  title: string;
+  mood?: string;
+  url: string;
+  color?: string;           // label stripe
+  labelBg?: string;         // label background
+  rotation?: number;        // initial CSS rotation (decorative; physics overrides)
+  aspect?: string;
+}
+const {
+  id,
+  title,
+  mood,
+  url,
+  color = 'var(--accent-1)',
+  labelBg = 'var(--bg)',
+  rotation = 0,
+  aspect = '16 / 9',
+} = Astro.props;
+---
+
+<div
+  class="tape"
+  data-tape={id}
+  data-title={title}
+  data-mood={mood}
+  data-url={url}
+  data-aspect={aspect}
+  style={`--tape-color:${color}; --tape-label-bg:${labelBg}; --tape-rot:${rotation}deg`}
+  role="button"
+  tabindex="0"
+  aria-label={`Cassette: ${title}. Drag onto the deck or double-click to play.`}
+>
+  <div class="tape-body">
+    <div class="tape-label">
+      <span class="tape-mood mono">{mood ?? '·'}</span>
+      <span class="tape-title">{title}</span>
+    </div>
+    <div class="tape-reels" aria-hidden="true">
+      <span class="reel"></span>
+      <span class="reel"></span>
+    </div>
+    <div class="tape-stripe" aria-hidden="true"></div>
+  </div>
+</div>
+
+<style>
+  .tape {
+    width: 180px;
+    height: 112px;
+    position: relative;
+    transform: rotate(var(--tape-rot));
+    will-change: transform;
+    user-select: none;
+    touch-action: none;
+    cursor: grab;
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.18));
+    transition: filter 180ms ease;
+  }
+  .tape:focus-visible { outline: 2px solid var(--accent-1); outline-offset: 4px; border-radius: 10px; }
+  .tape:active { cursor: grabbing; }
+  .tape.is-loaded { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)); }
+
+  .tape-body {
+    width: 100%;
+    height: 100%;
+    background: var(--tape-color);
+    border-radius: 10px;
+    box-shadow:
+      inset 0 0 0 2px rgba(0,0,0,0.12),
+      inset 0 -12px 0 rgba(0,0,0,0.06);
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 1fr auto;
+  }
+  .tape-label {
+    background: var(--tape-label-bg);
+    margin: 10px 10px 0;
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+  }
+  .tape-mood {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--tape-color);
+    filter: brightness(0.7);
+  }
+  .tape-title {
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-size: 0.95rem;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tape-reels {
+    display: flex;
+    justify-content: space-around;
+    padding: 4px 28px 10px;
+    align-items: center;
+  }
+  .reel {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(0,0,0,0.1) 0 4px, transparent 4px 5px, rgba(0,0,0,0.35) 5px 6px, rgba(255,255,255,0.1) 6px 8px, transparent 9px),
+      rgba(0,0,0,0.35);
+    position: relative;
+  }
+  .tape-stripe {
+    position: absolute;
+    left: 6px; right: 6px; bottom: 6px;
+    height: 4px;
+    border-radius: 2px;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,0.3) 0 6px,
+      transparent 6px 10px
+    );
+    opacity: 0.6;
+  }
+
+  .tape.is-loaded .reel {
+    animation: reel-spin 2.4s linear infinite;
+  }
+  @keyframes reel-spin {
+    to { transform: rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tape.is-loaded .reel { animation: none; }
+  }
+</style>
