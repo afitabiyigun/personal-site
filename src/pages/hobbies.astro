@@ -20,7 +20,7 @@ const palette = ['var(--shape-1)', 'var(--shape-2)', 'var(--shape-3)', 'var(--sh
 const labelBgs = ['var(--bg)', 'var(--bg-soft)'];
 ---
 
-<Base title="hobbies · afit">
+<Base title="hobbies · Afitab Iyigun">
   <div class="container">
     <Nav />
     <header class="head">
@@ -36,7 +36,7 @@ const labelBgs = ['var(--bg)', 'var(--bg-soft)'];
       {/* ---------- The deck ---------- */}
       <div class="deck" data-deck>
         <div class="deck-top">
-          <div class="deck-brand mono">AFIT · model 01</div>
+          <div class="deck-brand mono">AFITAB · model 01</div>
           <div class="deck-leds">
             <span class="led" style="--c:var(--accent-1)"></span>
             <span class="led" style="--c:var(--accent-2)"></span>
@@ -76,9 +76,6 @@ const labelBgs = ['var(--bg)', 'var(--bg-soft)'];
       </div>
     </section>
 
-    <aside class="note mono dim">
-      reduced-motion friendly: if you've turned motion down in the OS, double-click still loads a tape; the shelf just won't throw them around.
-    </aside>
   </div>
 </Base>
 
@@ -89,10 +86,14 @@ const labelBgs = ['var(--bg)', 'var(--bg-soft)'];
 
   .room {
     display: grid;
-    grid-template-columns: minmax(320px, 1fr) 1.2fr;
+    grid-template-columns: minmax(460px, 1.6fr) 1fr;
     gap: 2.4rem;
     align-items: start;
     padding-bottom: 3rem;
+    /* Perspective lets the dragged-tape lift read as a real 3D pop-up
+       rather than a flat scale. */
+    perspective: 1200px;
+    overflow: visible;
   }
   @media (max-width: 860px) {
     .room { grid-template-columns: 1fr; }
@@ -148,7 +149,8 @@ const labelBgs = ['var(--bg)', 'var(--bg-soft)'];
   }
 
   .deck-screen {
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 16 / 10;
+    min-height: 260px;
     background: #0a0a0d;
     border-radius: var(--radius);
     box-shadow: inset 0 0 0 2px rgba(0,0,0,0.6), inset 0 0 40px rgba(0,0,0,0.6);
@@ -227,7 +229,10 @@ const labelBgs = ['var(--bg)', 'var(--bg-soft)'];
   }
   .eject:hover { background: var(--ink); color: var(--bg); }
 
-  /* ===== Shelf ===== */
+  /* ===== Shelf =====
+     overflow is intentionally VISIBLE so that a tape being dragged can
+     lift out of the shelf box and float over the deck / page. The
+     Matter.js walls still keep idle tapes bounded inside the shelf. */
   .shelf {
     position: relative;
     min-height: 520px;
@@ -241,7 +246,8 @@ const labelBgs = ['var(--bg)', 'var(--bg-soft)'];
       var(--bg-soft);
     box-shadow: inset 0 0 30px rgba(0,0,0,0.04), var(--shadow);
     padding: 1rem;
-    overflow: hidden;
+    overflow: visible;
+    transform-style: preserve-3d;
   }
   .shelf-hint {
     position: absolute;

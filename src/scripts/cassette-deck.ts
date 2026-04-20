@@ -85,6 +85,7 @@ export function initCassetteDeck(root: HTMLElement) {
     w: number;
     h: number;
     home: { x: number; y: number; rot: number };
+    dragging: boolean;
   };
   const tapeBodies = new Map<string, TapeBody>();
 
@@ -119,7 +120,6 @@ export function initCassetteDeck(root: HTMLElement) {
 
     // GSAP Draggable wraps the element and pumps positions into the body.
     // We use 'none' (no built-in move) so we can translate via the body.
-    let dragging = false;
     let pointerLocal = { x: 0, y: 0 };
 
     const draggable = new Draggable(el, {
@@ -128,7 +128,9 @@ export function initCassetteDeck(root: HTMLElement) {
       activeCursor: 'grabbing',
       allowContextMenu: true,
       onPress(e) {
-        dragging = true;
+        const entry = tapeBodies.get(id);
+        if (entry) entry.dragging = true;
+        el.classList.add('is-dragging');
         const sr = els!.shelf.getBoundingClientRect();
         const pe = (e as PointerEvent);
         pointerLocal.x = pe.clientX - sr.left;
@@ -143,7 +145,9 @@ export function initCassetteDeck(root: HTMLElement) {
         Body.setPosition(body, { x: pointerLocal.x, y: pointerLocal.y });
       },
       onRelease() {
-        dragging = false;
+        const entry = tapeBodies.get(id);
+        if (entry) entry.dragging = false;
+        el.classList.remove('is-dragging');
         Body.setStatic(body, false);
         // Impart a tiny toss from the draggable's velocity so releases feel alive.
         Body.setVelocity(body, {
@@ -155,18 +159,22 @@ export function initCassetteDeck(root: HTMLElement) {
       },
     });
 
-    tapeBodies.set(id, { el, body, draggable, w, h, home });
+    tapeBodies.set(id, { el, body, draggable, w, h, home, dragging: false });
   }
 
   els.tapes.forEach(makeTape);
 
   // Sync DOM transforms from physics each frame.
+  // While a tape is being dragged, add a 3D lift (translateZ + scale) so
+  // it visibly pops out of the shelf. The tape's .is-dragging class also
+  // bumps z-index and shadow, so it can float above the deck.
   function sync() {
-    tapeBodies.forEach(({ el, body, w, h }) => {
+    tapeBodies.forEach(({ el, body, w, h, dragging }) => {
       if (el === loaded) return; // loaded tape is GSAP-controlled, not physics
       const x = body.position.x - w / 2;
       const y = body.position.y - h / 2;
-      el.style.transform = `translate(${x}px, ${y}px) rotate(${body.angle}rad)`;
+      const lift = dragging ? ' translateZ(60px) scale(1.08)' : '';
+      el.style.transform = `translate(${x}px, ${y}px) rotate(${body.angle}rad)${lift}`;
     });
   }
   Events.on(engine, 'afterUpdate', sync);

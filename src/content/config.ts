@@ -21,17 +21,6 @@ const photography = defineCollection({
     }),
 });
 
-const writing = defineCollection({
-  type: 'content',
-  schema: z.object({
-    title: z.string(),
-    date: z.coerce.date(),
-    tags: z.array(z.string()).default([]),
-    draft: z.boolean().default(false),
-    summary: z.string().optional(),
-  }),
-});
-
 const garden = defineCollection({
   type: 'content',
   schema: z.object({
@@ -44,4 +33,4 @@ const garden = defineCollection({
   }),
 });
 
-export const collections = { photography, writing, garden };
+export const collections = { photography, garden };

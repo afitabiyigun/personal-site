@@ -1,0 +1,338 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const fmt = (d: string) => d; // dates are already human-formatted below
+
+/*
+  Content — transcribed from the user's PDF résumé.
+  Update this file directly when the résumé changes; no CMS.
+*/
+
+const contact = {
+  name: 'Afitab İyigün',
+  location: 'Boston, MA',
+  phone: '(571) 345-6562',
+  email: 'afitab@bu.edu',
+  linkedin: 'linkedin.com/in/afitabiyigun',
+  github: 'github.com/afitabiyigun',
+};
+
+const education = {
+  school: 'Boston University',
+  degree: 'B.A. Mathematics and Computer Science',
+  graduation: 'Expected May 2027',
+  gpa: '3.69',
+  coursework: [
+    'Natural Language Processing*',
+    'Introduction to Artificial Intelligence',
+    'Responsible Artificial Intelligence',
+    'Multivariable Calculus*',
+    'Geometric Algorithms',
+    'Probability in Computing',
+    'Statistics II',
+    'Discrete Mathematics',
+    'Logic and Programming Languages*',
+    'Linguistics',
+    'International Nuclear Politics*',
+  ],
+  note: '* denotes Spring 2026 coursework',
+};
+
+const experience = [
+  {
+    role: 'Research Fellow',
+    org: 'Supervised Program for Alignment Research (NDIF, Northeastern University)',
+    when: 'February 2026 – Present',
+    bullets: [
+      'Monitoring and attributing implicit personalization in conversational agents under the supervision of Gabriele Sarti.',
+    ],
+  },
+  {
+    role: 'AI Safety Mentor',
+    org: 'Kairos Pathfinder Fellowship',
+    when: 'December 2025 – Present',
+    bullets: [
+      'Mentoring two AI safety university organizers on their organization’s programming, theory of change, and budgeting.',
+    ],
+  },
+  {
+    role: 'Deputy Director',
+    org: 'Boston University AI Safety and Alignment · Boston, MA',
+    when: 'January 2025 – Present',
+    bullets: [
+      'Lead and organize technical programs and outreach initiatives, helping grow the club to 70+ members across 6 cohorts.',
+      'Facilitate Technical AIS Fellowship, leading discussions and developing curriculum on interpretability, control, and evals.',
+      'Lead AI Safety & Policy Lab in collaboration with VT Rep. Monique Priestly and technical research program Verras.',
+    ],
+  },
+  {
+    role: 'AI Policy, Governance, and Strategy Fellow',
+    org: 'AI Safety Student Team · Cambridge, MA',
+    when: 'June 2025 – August 2025',
+    bullets: [
+      'Participated in discussions exploring the state of U.S. AI policy and compute, corporate, and international governance.',
+    ],
+  },
+  {
+    role: 'Research Fellow',
+    org: 'Boston University SUMMIT Lab · Boston, MA',
+    when: 'September 2024 – May 2025',
+    bullets: [
+      'Evaluated momentary measures of caregiving practices during caregiver-involved adolescent substance use and mental health treatment via ecological momentary assessment (EMA) to assess between- and within-participant variability.',
+      'To appear in Substance Use: Research and Treatment (Social Processes journal) as second author.',
+    ],
+  },
+  {
+    role: 'Research Intern',
+    org: 'Boston University Psycholinguistics Lab · Boston, MA',
+    when: 'September 2024 – December 2024',
+    bullets: [
+      'Investigated sarcasm as a mechanism of plausible deniability, developing controlled prompts and scoring language and social interaction measures (LexTALE, RISC, CATI, ASD, bilingualism) for comparative analysis.',
+    ],
+  },
+  {
+    role: 'Data Science Research Fellow',
+    org: 'UC Irvine Citizenship Lab',
+    when: 'July 2024 – August 2024',
+    bullets: [
+      'Researched and presented on transnational political belonging, unethical surveillance, and algorithmic judiciary systems.',
+      'Mapped 80+ empirical cases of mass carceral events and modeled categorization schemes from the World Prison Brief.',
+    ],
+  },
+];
+
+const projects = [
+  {
+    name: 'WinoReferral: A Benchmark to Evaluate LLMs in Mental Health Settings',
+    when: 'December 2025 – Present',
+    bullets: [
+      'Adapting EleutherAI’s LM Evaluation Harness; implementing an LLM-as-a-Judge framework to evaluate psychiatric referral abilities; researching jailbreaking techniques in mental-health contexts.',
+    ],
+  },
+  {
+    name: 'Category Counting via Causal Mediation Analysis',
+    when: 'December 2025',
+    bullets: [
+      'Benchmarked open-weight LLMs on a zero-shot category-counting task by synthetically generating several thousand prompts.',
+      'Performed causal mediation analysis via activation patching using NNsight to identify how layers encode running counts.',
+    ],
+  },
+  {
+    name: 'Extracting Memorized Secrets from GPT-2',
+    when: 'December 2025',
+    bullets: [
+      'Ran membership inference attacks to extract secrets via perplexity-based analysis with PyTorch and HF Transformers.',
+    ],
+  },
+  {
+    name: 'Pokémon Reinforcement Learning Agent',
+    when: 'November 2025 – December 2025',
+    bullets: [
+      'Built a Q-learning Pokémon agent in Java with a custom feature array, reward function, and transition model.',
+    ],
+  },
+  {
+    name: 'Steering GPT-2 via Activation Vector Editing',
+    when: 'November 2025',
+    bullets: [
+      'Applied contrastive activation vector editing to steer GPT-2 using PyTorch and HuggingFace Transformers.',
+    ],
+  },
+  {
+    name: 'A Transformer from Scratch — Kempner Institute, Harvard University',
+    when: 'October 2025',
+    bullets: [
+      'Built a decoder-only Transformer from scratch using PyTorch; implemented custom tokenization and embedding layers.',
+    ],
+  },
+];
+
+const skills = {
+  technical: ['Python', 'Java', 'OCaml', 'C', 'R', 'NNsight', 'interpretability', 'machine learning', 'probability', 'data structures', 'algorithms'],
+  languages: ['English (Fluent)', 'Turkish (Native)'],
+};
+---
+
+<Base title="resume · Afitab Iyigun">
+  <div class="container">
+    <Nav />
+
+    <header class="head">
+      <p class="eyebrow mono">§ 04 · résumé</p>
+      <h1>{contact.name}</h1>
+      <p class="lede">Math + CS at Boston University. Currently working on AI safety — interpretability, evals, and governance.</p>
+
+      <ul class="contact mono">
+        <li>{contact.location}</li>
+        <li><a href={`mailto:${contact.email}`}>{contact.email}</a></li>
+        <li>{contact.phone}</li>
+        <li><a href={`https://${contact.linkedin}`} rel="noopener">{contact.linkedin}</a></li>
+        <li><a href={`https://${contact.github}`} rel="noopener">{contact.github}</a></li>
+      </ul>
+    </header>
+
+    <section class="block">
+      <h2>Education</h2>
+      <div class="entry">
+        <div class="entry-head">
+          <strong>{education.school}</strong>
+          <span class="mono dim">{education.graduation}</span>
+        </div>
+        <div class="entry-sub">
+          <span>{education.degree}</span>
+          <span class="mono dim">GPA {education.gpa}</span>
+        </div>
+        <p class="coursework">
+          <span class="kicker mono">Relevant coursework:</span>
+          {education.coursework.join(', ')}.
+          <span class="mono dim"> ({education.note})</span>
+        </p>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Experience</h2>
+      {experience.map((e) => (
+        <div class="entry">
+          <div class="entry-head">
+            <strong>{e.org}</strong>
+            <span class="mono dim">{e.when}</span>
+          </div>
+          <div class="entry-sub">
+            <em>{e.role}</em>
+          </div>
+          <ul>
+            {e.bullets.map((b) => <li>{b}</li>)}
+          </ul>
+        </div>
+      ))}
+    </section>
+
+    <section class="block">
+      <h2>Projects</h2>
+      {projects.map((p) => (
+        <div class="entry">
+          <div class="entry-head">
+            <strong>{p.name}</strong>
+            <span class="mono dim">{p.when}</span>
+          </div>
+          <ul>
+            {p.bullets.map((b) => <li>{b}</li>)}
+          </ul>
+        </div>
+      ))}
+    </section>
+
+    <section class="block">
+      <h2>Skills</h2>
+      <p class="skills">
+        <span class="kicker mono">Technical:</span>
+        {skills.technical.join(', ')}.
+      </p>
+      <p class="skills">
+        <span class="kicker mono">Languages:</span>
+        {skills.languages.join(', ')}.
+      </p>
+    </section>
+
+    <footer class="foot mono dim">
+      <span>transcribed from the PDF on file — ping me if something looks out of date</span>
+    </footer>
+  </div>
+</Base>
+
+<style>
+  .head { padding: 3rem 0 1.5rem; }
+  .eyebrow { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: lowercase; margin: 0 0 1rem; }
+  h1 { margin: 0 0 0.6rem; }
+  .lede { color: var(--ink-soft); max-width: 62ch; margin: 0 0 1.2rem; font-size: 1.1rem; }
+
+  .contact {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1.2rem;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+  .contact li { position: relative; }
+  .contact a { background: none; color: var(--ink); }
+  .contact a:hover { background: none; color: var(--accent-1); }
+
+  .block {
+    padding: 2.2rem 0;
+    border-top: 1px solid var(--rule);
+  }
+  .block h2 {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 1.2rem;
+  }
+
+  .entry {
+    padding: 0.6rem 0 1.4rem;
+  }
+  .entry-head {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .entry-head strong {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.02rem;
+  }
+  .entry-sub {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 0.15rem 0 0.5rem;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+  }
+  .entry-sub em {
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+  .entry ul {
+    margin: 0.4rem 0 0;
+    padding-left: 1.1rem;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .entry ul li {
+    margin: 0.25rem 0;
+  }
+
+  .coursework, .skills {
+    color: var(--ink-soft);
+    margin: 0.4rem 0 0;
+    line-height: 1.55;
+  }
+  .kicker {
+    color: var(--ink);
+    margin-right: 0.3rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .foot {
+    padding: 2rem 0 3rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.82rem;
+  }
+
+  .dim { color: var(--muted); }
+  .mono { font-family: var(--font-mono); }
+</style>

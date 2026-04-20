@@ -8,38 +8,52 @@ const entries = (await getCollection('photography')).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
 const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+/*
+  Collage layout — each tile picks a pseudo-random size class based on its
+  index so the grid reads as a hand-arranged mood board, not a uniform
+  gallery. The sizes are stable (deterministic from index) so the layout
+  doesn't jump between builds.
+*/
+const sizeCycle = ['tall', 'wide', 'small', 'square', 'tall', 'small', 'wide', 'square', 'small'] as const;
 ---
 
-<Base title="photography · afit">
+<Base title="photography · Afitab Iyigun">
   <div class="container">
     <Nav />
     <header class="head">
       <p class="eyebrow mono">§ 02 · photography</p>
       <h1>A journal of things I noticed.</h1>
-      <p class="lede">Hover a photo for its contact-sheet metadata.</p>
+      <p class="lede">Hover a photo — it dims, and the caption + metadata slides in from the bottom-right.</p>
     </header>
 
-    <section class="grid">
+    <section class="collage">
       {entries.map((e, i) => (
-        <figure class={`photo ${i % 10 === 9 ? 'photo--grain' : ''}`}>
-          <div class="img-wrap">
-            <Image src={e.data.photo} alt={e.data.caption} widths={[480, 960, 1440]} sizes="(min-width: 700px) 50vw, 100vw" />
-            {e.data.exif && (
-              <div class="exif mono" aria-hidden="true">
+        <figure class={`tile tile--${sizeCycle[i % sizeCycle.length]}`}>
+          <Image
+            src={e.data.photo}
+            alt={e.data.caption}
+            widths={[480, 960, 1440]}
+            sizes="(min-width: 900px) 40vw, 100vw"
+          />
+          <figcaption class="overlay" aria-hidden="true">
+            <div class="overlay-inner mono">
+              <div class="title">{e.data.title}</div>
+              <div class="caption">{e.data.caption}</div>
+              <div class="meta">
                 <span>{fmt(e.data.date)}</span>
-                <span>{e.data.location}</span>
-                {e.data.exif.camera && <span>cam · {e.data.exif.camera}</span>}
-                {e.data.exif.lens && <span>lens · {e.data.exif.lens}</span>}
-                {e.data.exif.shutter && <span>shutter · {e.data.exif.shutter}</span>}
-                {e.data.exif.aperture && <span>{e.data.exif.aperture}</span>}
-                {e.data.exif.iso && <span>ISO {e.data.exif.iso}</span>}
+                <span>· {e.data.location}</span>
               </div>
-            )}
-          </div>
-          <figcaption>
-            <strong>{e.data.title}</strong>
-            <span class="dim mono"> · {fmt(e.data.date)} · {e.data.location}</span>
-            <p>{e.data.caption}</p>
+              {e.data.exif && (
+                <div class="exif">
+                  {e.data.exif.camera && <span>{e.data.exif.camera}</span>}
+                  {e.data.exif.lens && <span>· {e.data.exif.lens}</span>}
+                  {e.data.exif.shutter && <span>· {e.data.exif.shutter}</span>}
+                  {e.data.exif.aperture && <span>· {e.data.exif.aperture}</span>}
+                  {e.data.exif.iso && <span>· ISO {e.data.exif.iso}</span>}
+                </div>
+              )}
+            </div>
           </figcaption>
         </figure>
       ))}
@@ -52,58 +66,123 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
   .eyebrow { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: lowercase; margin: 0 0 1rem; }
   .lede { font-size: 1.1rem; color: var(--ink-soft); max-width: 62ch; }
 
-  .grid {
+  /*
+    Collage grid. `grid-auto-flow: dense` lets CSS pack tiles of mixed
+    sizes into holes, producing a masonry-like mosaic without JS.
+  */
+  .collage {
     display: grid;
-    gap: 3rem;
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: 120px;
+    grid-auto-flow: dense;
+    gap: 12px;
     padding-bottom: 4rem;
   }
-  .photo { margin: 0; }
-  .img-wrap {
+  @media (max-width: 900px) {
+    .collage { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 110px; }
+  }
+  @media (max-width: 560px) {
+    .collage { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 140px; }
+  }
+
+  .tile {
     position: relative;
+    margin: 0;
     overflow: hidden;
-    border-radius: var(--radius);
+    border-radius: calc(var(--radius) * 0.7);
     box-shadow: var(--shadow);
+    background: var(--bg-soft);
+    isolation: isolate;
   }
-  .img-wrap :global(img) {
+
+  /* Size classes — map onto the grid. */
+  .tile--small   { grid-column: span 2; grid-row: span 2; }
+  .tile--square  { grid-column: span 3; grid-row: span 3; }
+  .tile--wide    { grid-column: span 4; grid-row: span 2; }
+  .tile--tall    { grid-column: span 2; grid-row: span 4; }
+
+  @media (max-width: 900px) {
+    .tile--small  { grid-column: span 2; grid-row: span 2; }
+    .tile--square { grid-column: span 2; grid-row: span 2; }
+    .tile--wide   { grid-column: span 4; grid-row: span 2; }
+    .tile--tall   { grid-column: span 2; grid-row: span 3; }
+  }
+  @media (max-width: 560px) {
+    .tile--small, .tile--square, .tile--wide, .tile--tall {
+      grid-column: span 2; grid-row: span 2;
+    }
+  }
+
+  .tile :global(img) {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
-    transition: transform 400ms ease;
+    object-fit: cover;
+    transition: filter 280ms ease, transform 500ms ease;
   }
-  .photo:hover .img-wrap :global(img) { transform: scale(1.02); }
+  .tile:hover :global(img),
+  .tile:focus-within :global(img) {
+    filter: brightness(0.55) saturate(1.05);
+    transform: scale(1.03);
+  }
 
-  .exif {
+  /*
+    Hover overlay — anchored to the bottom-right corner of each tile.
+    The overlay-inner slides up + fades in, so the caption reads like
+    a museum placard appearing over a dimming image.
+  */
+  .overlay {
     position: absolute;
-    inset: auto 10px 10px auto;
-    display: flex;
-    gap: 10px;
-    padding: 6px 10px;
-    background: rgba(28, 27, 24, 0.7);
-    color: #f6f1e7;
-    font-size: 0.72rem;
-    border-radius: 6px;
-    opacity: 0;
-    transition: opacity 240ms ease;
-    flex-wrap: wrap;
-    max-width: min(80%, 420px);
-    backdrop-filter: blur(6px);
-  }
-  .photo:hover .exif { opacity: 1; }
-
-  .photo--grain .img-wrap::after {
-    content: '';
-    position: absolute; inset: 0;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='1' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/></svg>");
-    mix-blend-mode: multiply;
+    inset: 0;
     pointer-events: none;
-    opacity: calc(0.4 + var(--grain, 0) * 0.6);
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 14px;
+  }
+  .overlay-inner {
+    max-width: 78%;
+    text-align: right;
+    color: #f7f3ea;
+    font-size: 0.76rem;
+    line-height: 1.45;
+    letter-spacing: 0.01em;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    transform: translateY(8px);
+    opacity: 0;
+    transition: opacity 260ms ease, transform 260ms ease;
+  }
+  .tile:hover .overlay-inner,
+  .tile:focus-within .overlay-inner {
+    opacity: 1;
+    transform: translateY(0);
   }
 
-  figcaption { padding: 1rem 0.2rem 0; }
-  figcaption p { margin: 0.4rem 0 0; color: var(--ink-soft); }
-  .dim { color: var(--muted); font-size: 0.85rem; }
+  .overlay-inner .title {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .overlay-inner .caption {
+    margin-bottom: 6px;
+    opacity: 0.92;
+    max-width: 44ch;
+    margin-left: auto; /* keep right-aligned even when it wraps */
+  }
+  .overlay-inner .meta,
+  .overlay-inner .exif {
+    opacity: 0.75;
+    font-size: 0.7rem;
+  }
+  .overlay-inner .exif {
+    margin-top: 2px;
+    opacity: 0.6;
+  }
 
   @media (prefers-reduced-motion: reduce) {
-    .photo:hover .img-wrap :global(img) { transform: none; }
+    .tile :global(img) { transition: filter 120ms ease; }
+    .overlay-inner { transition: opacity 120ms ease; transform: none; }
   }
 </style>

@@ -52,20 +52,32 @@ const {
 
 <style>
   .tape {
-    width: 180px;
-    height: 112px;
+    width: 200px;
+    height: 124px;
     position: relative;
     transform: rotate(var(--tape-rot));
-    will-change: transform;
+    will-change: transform, filter;
     user-select: none;
     touch-action: none;
     cursor: grab;
     filter: drop-shadow(0 6px 12px rgba(0,0,0,0.18));
     transition: filter 180ms ease;
+    transform-style: preserve-3d;
   }
   .tape:focus-visible { outline: 2px solid var(--accent-1); outline-offset: 4px; border-radius: 10px; }
   .tape:active { cursor: grabbing; }
   .tape.is-loaded { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)); }
+
+  /*
+    Dragging: the tape lifts up (z-axis) and casts a longer shadow so the
+    motion reads as 3D. Render on top of everything (z-index: 1000) so
+    it can hover over the deck or other page elements.
+  */
+  .tape.is-dragging {
+    z-index: 1000;
+    filter: drop-shadow(0 22px 26px rgba(0, 0, 0, 0.32)) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.18));
+    transition: filter 120ms ease;
+  }
 
   .tape-body {
     width: 100%;
