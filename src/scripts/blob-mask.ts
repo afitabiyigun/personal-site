@@ -18,11 +18,12 @@ interface BlobState {
 }
 
 function makeInitial(w: number, h: number): BlobState {
-  const cx = w / 2;
-  const cy = h / 2;
-  // Cover a large portion of the container initially so the image reads
-  // as "mostly filling the background" before the user interacts.
-  const baseR = Math.min(w, h) * 0.48;
+  // Nest the blob in the top-right corner by default so the bio copy on
+  // the left stays readable. Users who want it to cover the writing can
+  // drag a point across — the blob follows.
+  const cx = w * 0.82;
+  const cy = h * 0.38;
+  const baseR = Math.min(w, h) * 0.32;
   const pts: Point[] = [];
   for (let i = 0; i < N; i++) {
     const angle = (i / N) * Math.PI * 2;
