@@ -1,0 +1,113 @@
+---
+/*
+  BlobMask: a full-container SVG overlay whose artwork is clipped by an
+  organic blob path. The blob is defined by N radial control points
+  (see ../scripts/blob-mask.ts). Clicking/touching anywhere on the blob
+  picks the nearest control point; dragging reshapes the blob in real
+  time by moving that point radially (with a small clamped angle follow).
+
+  Layering contract (used by pages that embed this):
+    • background: plain white on the page
+    • middle: the page's nav / bio / content (normal flow)
+    • top: this component — an absolutely-positioned overlay that covers
+      its parent. The SVG root has `pointer-events: none` so it never
+      blocks the middle layer; only the .drag-hit path receives pointer
+      events, which corresponds exactly to the blob's current shape.
+
+  The visible artwork lives inside <g clip-path="url(#...)">, so only the
+  portion of the artwork that lies inside the blob is rendered.
+*/
+---
+
+<svg
+  class="blob-mask"
+  data-blob-mask
+  xmlns="http://www.w3.org/2000/svg"
+  preserveAspectRatio="none"
+  aria-hidden="true"
+>
+  <defs>
+    <clipPath id="blob-clip" clipPathUnits="userSpaceOnUse">
+      <path class="blob-shape" d="M 0 0"></path>
+    </clipPath>
+
+    {/* Artwork: a rich, colorful composition so the reveal looks like
+        a real image behind the blob. Swap this <g> for an <image> tag
+        later to use a real photograph. */}
+    <linearGradient id="bm-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f7d6a3" />
+      <stop offset="55%" stop-color="#ef8f6f" />
+      <stop offset="100%" stop-color="#8a3a5e" />
+    </linearGradient>
+    <radialGradient id="bm-sun" cx="68%" cy="34%" r="45%">
+      <stop offset="0%" stop-color="#ffe9b6" stop-opacity="1" />
+      <stop offset="85%" stop-color="#ffb36b" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="bm-water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a2d4a" />
+      <stop offset="100%" stop-color="#111527" />
+    </linearGradient>
+  </defs>
+
+  {/*
+    Everything inside this <g> is clipped by the blob path.
+    NOTE: SVG <path d="..."> doesn't accept percentages, so the artwork
+    uses rect / circle which DO accept percentages on their geometry
+    attributes. Layered bands + a sun + some sparkles read as a rich,
+    photograph-like backdrop without needing a real image.
+  */}
+  <g clip-path="url(#blob-clip)" class="blob-artwork">
+    <rect x="0" y="0" width="100%" height="100%" fill="url(#bm-sky)" />
+    <circle cx="68%" cy="34%" r="26%" fill="url(#bm-sun)" />
+    {/* Horizon bands (ground + water) */}
+    <rect x="0" y="62%" width="100%" height="14%" fill="#2b3040" opacity="0.88" />
+    <rect x="0" y="74%" width="100%" height="26%" fill="url(#bm-water)" />
+    {/* Sparkles */}
+    <g fill="#ffffff" opacity="0.9">
+      <circle cx="14%" cy="18%" r="2.2" />
+      <circle cx="22%" cy="10%" r="1.4" />
+      <circle cx="36%" cy="16%" r="1.8" />
+      <circle cx="8%"  cy="26%" r="1.2" />
+      <circle cx="48%" cy="8%"  r="1.6" />
+      <circle cx="86%" cy="14%" r="1.6" />
+      <circle cx="74%" cy="6%"  r="1.2" />
+    </g>
+    {/* A warm reflection off the water */}
+    <rect x="60%" y="76%" width="18%" height="2" fill="#ffd9a8" opacity="0.6" />
+    <rect x="62%" y="80%" width="14%" height="2" fill="#ffd9a8" opacity="0.4" />
+    <rect x="64%" y="84%" width="10%" height="2" fill="#ffd9a8" opacity="0.3" />
+  </g>
+
+  {/* Invisible hit target — matches the blob shape exactly. This is the
+      only element inside the SVG that receives pointer events. */}
+  <path class="blob-shape-hit drag-hit" d="M 0 0" fill="transparent"></path>
+</svg>
+
+<style>
+  .blob-mask {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none; /* SVG root is transparent to events */
+    overflow: visible;
+  }
+  /* Only the hit path is interactive; it traces the blob exactly, so
+     users can only grab the blob's perimeter area. */
+  .blob-shape-hit {
+    pointer-events: all;
+    cursor: grab;
+    touch-action: none;
+  }
+  [data-dragging='1'] .blob-shape-hit { cursor: grabbing; }
+
+  /* A soft drop shadow so the blob lifts off the white page. */
+  .blob-artwork {
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.18));
+  }
+</style>
+
+<script>
+  import '../scripts/blob-mask.ts';
+</script>

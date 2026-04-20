@@ -2,39 +2,51 @@
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import ThemeSwitcher from '../components/ThemeSwitcher.astro';
-import SlideReveal from '../components/SlideReveal.astro';
+import BlobMask from '../components/BlobMask.astro';
 ---
 
 <Base title="Afitab Iyigun — creative + curious">
-  <div class="container">
-    <Nav />
+  {/*
+    HERO — full above-the-fold.
+      • white background
+      • middle layer: nav + bio (normal flow inside .container)
+      • top layer: the BlobMask overlay, which sits absolutely over the
+        hero and clips its colorful artwork to a draggable blob shape.
+        Only the blob itself receives pointer events, so the bio copy
+        outside the blob is still selectable/interactive.
+  */}
+  <section class="hero-section" aria-label="Interactive blob — drag any point on the blob to reshape it">
+    <div class="container hero-inner">
+      <Nav />
 
-    <section class="hero-reveal" aria-label="Drag the edges to reveal more or less of the image">
-      <SlideReveal aspect="16 / 10" n={22} e={22} s={22} w={22} />
-      <p class="reveal-hint mono">drag any edge →</p>
-    </section>
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow mono">personal site · work in progress</p>
+          <h1>
+            hi, i'm <span class="accent">Afitab</span>.<br />
+            i think about <em>minds</em>, <em>models</em>,<br />
+            and <em>making things</em>.
+          </h1>
+          <p class="lede">
+            Background in CS, math, and psychology. Currently working on AI
+            safety. This site is for the rest — photos, video, half-baked notes,
+            and whatever I'm playing with this week.
+          </p>
 
-    <header class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow mono">personal site · work in progress</p>
-        <h1>
-          hi, i'm <span class="accent">Afitab</span>.<br />
-          i think about <em>minds</em>, <em>models</em>,<br />
-          and <em>making things</em>.
-        </h1>
-        <p class="lede">
-          Background in CS, math, and psychology. Currently working on AI
-          safety. This site is for the rest — photos, video, half-baked notes,
-          and whatever I'm playing with this week.
-        </p>
-
-        <div class="switcher-row">
-          <span class="mono dim">paint the room:</span>
-          <ThemeSwitcher />
+          <div class="switcher-row">
+            <span class="mono dim">paint the room:</span>
+            <ThemeSwitcher />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </div>
 
+    <BlobMask />
+
+    <p class="blob-hint mono" aria-hidden="true">grab the blob — drag any point →</p>
+  </section>
+
+  <div class="container">
     <section class="teasers">
       <a class="teaser mono" href={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/hobbies`}>
         <span class="num">01</span> hobbies → <span class="dim">looping videos of what i do offline</span>
@@ -54,25 +66,31 @@ import SlideReveal from '../components/SlideReveal.astro';
       <span class="mono dim">
         afitab iyigun · repainted <span data-repaint-count>0</span> times ·
         <a href="https://github.com/afitabiyigun">github</a> ·
-        <span class="hint">(grab any corner of a shape and pull — it expands as much as you drag)</span>
+        <span class="hint">(grab any point on the blob and drag to reshape it)</span>
       </span>
     </footer>
   </div>
 </Base>
 
 <style>
-  .hero-reveal {
+  /* ===== Hero: full-viewport, white bg, blob overlay on top ===== */
+  .hero-section {
     position: relative;
+    min-height: 100vh;
     background: #ffffff;
-    padding: 2.4rem;
-    margin: 2rem 0 3rem;
-    border-radius: calc(var(--radius) * 1.2);
-    box-shadow: 0 30px 70px -40px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.06);
+    overflow: hidden;
+    isolation: isolate;
   }
-  .reveal-hint {
+  .hero-inner {
+    position: relative;
+    z-index: 1; /* middle layer — under the blob (z:10) */
+  }
+
+  .blob-hint {
     position: absolute;
     right: 1.2rem;
-    bottom: 0.8rem;
+    bottom: 1rem;
+    z-index: 2;
     font-size: 0.72rem;
     letter-spacing: 0.12em;
     color: #999;
@@ -81,7 +99,7 @@ import SlideReveal from '../components/SlideReveal.astro';
   }
 
   .hero {
-    padding: 1rem 0 4rem;
+    padding: 2rem 0 4rem;
     max-width: 62ch;
   }
   .eyebrow {
