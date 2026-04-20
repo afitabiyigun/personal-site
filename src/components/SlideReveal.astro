@@ -1,0 +1,217 @@
+---
+/*
+  Slide-reveal: an image masked by a rectangular window. Drag any of the
+  four edges (N/E/S/W) to slide that edge inward/outward — revealing more
+  or less of the underlying image.
+
+  The mask uses `clip-path: inset(...)` driven by four CSS custom
+  properties. The handles are absolutely positioned along each edge and
+  read the same vars, so they always sit exactly on the mask's boundary.
+
+  Default slot: the "image" content. If omitted, renders a built-in
+  inline SVG artwork so the primitive stands on its own.
+*/
+
+interface Props {
+  n?: number;         // starting inset percentages
+  e?: number;
+  s?: number;
+  w?: number;
+  aspect?: string;    // e.g. "16 / 10"
+  rounded?: boolean;
+  class?: string;
+}
+
+const { n = 18, e = 18, s = 18, w = 18, aspect = '16 / 10', rounded = false, class: className } = Astro.props;
+
+const style = [
+  `--sr-inset-n:${n}%`,
+  `--sr-inset-e:${e}%`,
+  `--sr-inset-s:${s}%`,
+  `--sr-inset-w:${w}%`,
+  `aspect-ratio:${aspect}`,
+].join(';');
+---
+
+<div
+  class:list={['slide-reveal', { 'slide-reveal--round': rounded }, className]}
+  data-slide-reveal
+  style={style}
+>
+  {/* The mask window — clipped by inset(t r b l). */}
+  <div class="sr-window" aria-hidden="true">
+    <div class="sr-image">
+      <slot>
+        {/* Default artwork: a colorful composition so the MVP has something
+            visibly rich to reveal. Swap the slot with an <img> or <video>. */}
+        <svg viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="sr-sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f6d6a0" />
+              <stop offset="60%" stop-color="#f29e7a" />
+              <stop offset="100%" stop-color="#c45a74" />
+            </linearGradient>
+            <radialGradient id="sr-sun" cx="70%" cy="32%" r="40%">
+              <stop offset="0%" stop-color="#ffe9b6" stop-opacity="1" />
+              <stop offset="80%" stop-color="#ffb36b" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="900" height="600" fill="url(#sr-sky)" />
+          <circle cx="640" cy="190" r="220" fill="url(#sr-sun)" />
+          <path d="M0,420 C180,370 260,470 430,420 C600,370 740,470 900,410 L900,600 L0,600 Z" fill="#2b3440" opacity="0.85" />
+          <path d="M0,470 C150,440 320,510 500,470 C680,430 820,510 900,475 L900,600 L0,600 Z" fill="#1b2330" />
+          <g opacity="0.9">
+            <circle cx="150" cy="120" r="4" fill="#fff" />
+            <circle cx="210" cy="80"  r="2" fill="#fff" />
+            <circle cx="320" cy="140" r="3" fill="#fff" />
+            <circle cx="80"  cy="220" r="2" fill="#fff" />
+          </g>
+        </svg>
+      </slot>
+    </div>
+  </div>
+
+  {/* Edge handles — each is a real button for keyboard + a11y. */}
+  <button type="button" class="sr-edge sr-edge--n" data-sr-edge="n" aria-label="Drag top edge up or down to reveal more"></button>
+  <button type="button" class="sr-edge sr-edge--s" data-sr-edge="s" aria-label="Drag bottom edge up or down to reveal more"></button>
+  <button type="button" class="sr-edge sr-edge--w" data-sr-edge="w" aria-label="Drag left edge left or right to reveal more"></button>
+  <button type="button" class="sr-edge sr-edge--e" data-sr-edge="e" aria-label="Drag right edge left or right to reveal more"></button>
+</div>
+
+<style>
+  .slide-reveal {
+    position: relative;
+    width: 100%;
+    background: #ffffff;       /* clean white backdrop around the mask */
+    isolation: isolate;
+    overflow: hidden;
+    user-select: none;
+  }
+  .slide-reveal--round { border-radius: var(--radius); }
+
+  /* The window that shows the image — its clip-path hides everything
+     outside the current inset box. */
+  .sr-window {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(
+      var(--sr-inset-n, 18%)
+      var(--sr-inset-e, 18%)
+      var(--sr-inset-s, 18%)
+      var(--sr-inset-w, 18%)
+    );
+    transition: clip-path 120ms ease-out;
+  }
+  .slide-reveal[data-sr-dragging] .sr-window { transition: none; }
+
+  .sr-image {
+    position: absolute;
+    inset: 0;
+  }
+  .sr-image :global(svg),
+  .sr-image :global(img),
+  .sr-image :global(video) {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  /* A faint inner outline along the mask boundary — helps the edges read
+     as 'draggable'. Painted on a pseudo-element that mirrors the inset. */
+  .slide-reveal::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    top: var(--sr-inset-n);
+    right: var(--sr-inset-e);
+    bottom: var(--sr-inset-s);
+    left: var(--sr-inset-w);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.18) inset;
+    transition: inset 120ms ease-out;
+  }
+  .slide-reveal[data-sr-dragging]::after { transition: none; }
+
+  /* ===== Edge handles =====
+     Each handle is a strip that spans the length of its edge, so the
+     whole edge is draggable, with a visible pill in the middle. */
+  .sr-edge {
+    position: absolute;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    touch-action: none;
+    z-index: 2;
+  }
+  .sr-edge::before {
+    content: '';
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--ink, #111);
+    border-radius: 999px;
+    opacity: 0.8;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.9);
+    transition: transform 160ms ease, opacity 160ms ease;
+  }
+  .sr-edge:hover::before,
+  .sr-edge:focus-visible::before { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+  .sr-edge:focus-visible { outline: none; }
+  .sr-edge:focus-visible::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    box-shadow: 0 0 0 2px var(--accent-1);
+  }
+
+  /* Horizontal edges (top / bottom): strip spans full width of mask.
+     The pill inside is a short horizontal bar. */
+  .sr-edge--n, .sr-edge--s {
+    left: var(--sr-inset-w);
+    right: var(--sr-inset-e);
+    height: 28px;
+    cursor: ns-resize;
+    transition: top 120ms ease-out, bottom 120ms ease-out, left 120ms ease-out, right 120ms ease-out;
+  }
+  .slide-reveal[data-sr-dragging] .sr-edge { transition: none; }
+  .sr-edge--n {
+    top: var(--sr-inset-n);
+    transform: translateY(-50%);
+  }
+  .sr-edge--s {
+    bottom: var(--sr-inset-s);
+    transform: translateY(50%);
+  }
+  .sr-edge--n::before,
+  .sr-edge--s::before {
+    width: 52px; height: 6px;
+  }
+
+  /* Vertical edges (left / right): strip spans full mask height.
+     The pill is a short vertical bar. */
+  .sr-edge--w, .sr-edge--e {
+    top: var(--sr-inset-n);
+    bottom: var(--sr-inset-s);
+    width: 28px;
+    cursor: ew-resize;
+    transition: top 120ms ease-out, bottom 120ms ease-out, left 120ms ease-out, right 120ms ease-out;
+  }
+  .sr-edge--w {
+    left: var(--sr-inset-w);
+    transform: translateX(-50%);
+  }
+  .sr-edge--e {
+    right: var(--sr-inset-e);
+    transform: translateX(50%);
+  }
+  .sr-edge--w::before,
+  .sr-edge--e::before {
+    width: 6px; height: 52px;
+  }
+</style>
+
+<script>
+  import '../scripts/slide-reveal.ts';
+</script>

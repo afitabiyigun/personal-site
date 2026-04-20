@@ -2,13 +2,17 @@
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import ThemeSwitcher from '../components/ThemeSwitcher.astro';
-import Unfold from '../components/Unfold.astro';
-import FunkyShape from '../components/FunkyShape.astro';
+import SlideReveal from '../components/SlideReveal.astro';
 ---
 
 <Base title="Afitab Iyigun — creative + curious">
   <div class="container">
     <Nav />
+
+    <section class="hero-reveal" aria-label="Drag the edges to reveal more or less of the image">
+      <SlideReveal aspect="16 / 10" n={22} e={22} s={22} w={22} />
+      <p class="reveal-hint mono">drag any edge →</p>
+    </section>
 
     <header class="hero">
       <div class="hero-copy">
@@ -29,48 +33,6 @@ import FunkyShape from '../components/FunkyShape.astro';
           <ThemeSwitcher />
         </div>
       </div>
-
-      <aside class="hero-shapes" aria-label="Grab any corner of a shape and drag to unfold it">
-        <figure class="shape-cell s1">
-          <Unfold label="orange blob" minW={120} minH={120} startW={180} startH={180} maxW={520} maxH={520}>
-            <FunkyShape variant={1} fill="var(--shape-1)" rotate={-6} />
-          </Unfold>
-          <figcaption>
-            <strong>cs + math</strong>
-            <span class="mono dim">algorithms, probability, linear algebra, category theory.</span>
-          </figcaption>
-        </figure>
-
-        <figure class="shape-cell s2">
-          <Unfold label="green blob" minW={120} minH={120} startW={180} startH={180} maxW={520} maxH={520}>
-            <FunkyShape variant={3} fill="var(--shape-2)" rotate={8} />
-          </Unfold>
-          <figcaption>
-            <strong>psychology</strong>
-            <span class="mono dim">cognition, perception, belief under uncertainty.</span>
-          </figcaption>
-        </figure>
-
-        <figure class="shape-cell s3">
-          <Unfold label="peach blob" minW={120} minH={120} startW={180} startH={180} maxW={520} maxH={520}>
-            <FunkyShape variant={2} fill="var(--shape-3)" rotate={-12} />
-          </Unfold>
-          <figcaption>
-            <strong>ai safety</strong>
-            <span class="mono dim">alignment, interpretability, legible systems.</span>
-          </figcaption>
-        </figure>
-
-        <figure class="shape-cell s4">
-          <Unfold label="blue blob" minW={120} minH={120} startW={180} startH={180} maxW={520} maxH={520}>
-            <FunkyShape variant={5} fill="var(--shape-4)" rotate={4} />
-          </Unfold>
-          <figcaption>
-            <strong>making things</strong>
-            <span class="mono dim">photos, video, small tools, too-long essays.</span>
-          </figcaption>
-        </figure>
-      </aside>
     </header>
 
     <section class="teasers">
@@ -99,15 +61,28 @@ import FunkyShape from '../components/FunkyShape.astro';
 </Base>
 
 <style>
-  .hero {
-    padding: 3rem 0 5rem;
-    display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    gap: 4rem;
-    align-items: center;
+  .hero-reveal {
+    position: relative;
+    background: #ffffff;
+    padding: 2.4rem;
+    margin: 2rem 0 3rem;
+    border-radius: calc(var(--radius) * 1.2);
+    box-shadow: 0 30px 70px -40px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.06);
   }
-  @media (max-width: 840px) {
-    .hero { grid-template-columns: 1fr; gap: 3rem; }
+  .reveal-hint {
+    position: absolute;
+    right: 1.2rem;
+    bottom: 0.8rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: #999;
+    pointer-events: none;
+    text-transform: lowercase;
+  }
+
+  .hero {
+    padding: 1rem 0 4rem;
+    max-width: 62ch;
   }
   .eyebrow {
     color: var(--muted);
@@ -129,34 +104,6 @@ import FunkyShape from '../components/FunkyShape.astro';
   }
   .dim { color: var(--muted); font-size: 0.85rem; }
   .hint { opacity: 0.7; }
-
-  .hero-shapes {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-    gap: 28px 24px;
-    align-items: start;
-    justify-items: center;
-  }
-  .shape-cell {
-    margin: 0;
-    display: grid;
-    gap: 10px;
-    justify-items: center;
-    text-align: center;
-  }
-  .shape-cell figcaption {
-    display: grid;
-    gap: 2px;
-    max-width: 26ch;
-    font-size: 0.92rem;
-    color: var(--ink);
-  }
-  .shape-cell figcaption strong {
-    font-family: var(--font-display);
-    font-weight: var(--display-weight);
-    letter-spacing: var(--letter-display);
-  }
 
   .teasers {
     display: grid;
