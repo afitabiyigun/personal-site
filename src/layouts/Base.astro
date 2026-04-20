@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { ViewTransitions } from 'astro:transitions';
+import DoodleToggle from '../components/DoodleToggle.astro';
 
 interface Props {
   title?: string;
@@ -58,6 +59,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   </head>
   <body>
     <slot />
+    <DoodleToggle />
     <script>
       import '../scripts/easter-eggs.ts';
     </script>

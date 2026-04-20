@@ -1,0 +1,99 @@
+---
+/*
+  Floating pencil button (bottom-right). Toggles drawable margins on the
+  current page. Doodles persist in localStorage per pathname.
+
+  Shortcut: D key toggles the mode globally.
+*/
+---
+
+<div class="doodle-ui" data-doodle-ui aria-label="Drawable margins">
+  <button class="doodle-btn" data-doodle-toggle type="button" aria-pressed="false" aria-label="Toggle drawing mode (D)">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <path d="M3 21l3.5-1 11-11-2.5-2.5-11 11L3 21z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M14 7.5l2.5 2.5 2.2-2.2a1.5 1.5 0 0 0 0-2.1l-0.4-0.4a1.5 1.5 0 0 0-2.1 0L14 7.5z" fill="currentColor"/>
+    </svg>
+  </button>
+  <button class="doodle-btn doodle-clear" data-doodle-clear type="button" aria-label="Clear doodles on this page" hidden>
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+</div>
+
+<style>
+  .doodle-ui {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 950;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+  }
+  .doodle-btn {
+    appearance: none;
+    width: 40px; height: 40px;
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: transform 180ms ease, background 180ms ease, color 180ms ease;
+  }
+  .doodle-btn:hover { transform: translateY(-1px); }
+  .doodle-btn[aria-pressed='true'] {
+    background: var(--accent-1);
+    color: var(--bg);
+    border-color: var(--accent-1);
+  }
+  .doodle-btn[hidden] { display: none; }
+  .doodle-btn:focus-visible {
+    outline: 2px solid var(--accent-1);
+    outline-offset: 3px;
+  }
+  :global(html.doodle-on) .doodle-clear { display: grid; }
+</style>
+
+<script>
+  import { setDoodleActive, clearDoodle, initDoodle } from '../scripts/doodle.ts';
+
+  function wire() {
+    initDoodle();
+    const toggle = document.querySelector<HTMLButtonElement>('[data-doodle-toggle]');
+    const clear = document.querySelector<HTMLButtonElement>('[data-doodle-clear]');
+    if (!toggle || !clear) return;
+
+    if (toggle.dataset.doodleWired) return;
+    toggle.dataset.doodleWired = '1';
+
+    let active = false;
+    toggle.addEventListener('click', () => {
+      active = !active;
+      setDoodleActive(active);
+      toggle.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    clear.addEventListener('click', () => {
+      clearDoodle();
+    });
+
+    // Keyboard shortcut: D toggles (unless user is typing).
+    document.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() !== 'd' || e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = document.activeElement as HTMLElement | null;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+      toggle.click();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wire);
+  } else {
+    wire();
+  }
+  document.addEventListener('astro:page-load', wire);
+</script>
